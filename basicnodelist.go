@@ -1,40 +1,44 @@
 package dom
 
 type BasicNodeList struct {
-	parentNode treeNode
+	parentNode *treeNode
 
-	list    []treeNode
-	listVer int
+	list []Node
+	ver  int
 }
 
-func newBasicNodeList(parent treeNode) *BasicNodeList {
+func newBasicNodeList(parent Node) *BasicNodeList {
 	ret := &BasicNodeList{
-		parentNode: parent,
-		list:       make([]treeNode, 0),
-		listVer:    parent.getChildListVer(),
+		parentNode: parent.treeNode(),
+		list:       nil,
+		ver:        0,
 	}
-	ret.buildList()
 	return ret
 }
 
 func (list *BasicNodeList) buildList() {
-	list.list = make([]treeNode, 0)
-	for itr := list.parentNode.getFirstChild(); itr != nil; itr = itr.getNextSibling() {
+	if list.list != nil && list.ver != list.parentNode.ver {
+		list.list = nil
+	}
+	if list.list != nil && list.ver == list.parentNode.ver {
+		return
+	}
+	list.list = make([]Node, 0)
+	for itr := list.parentNode.GetFirstChild(); itr != nil; itr = itr.GetNextSibling() {
 		list.list = append(list.list, itr)
 	}
-	list.listVer = list.parentNode.getChildListVer()
+	list.listVer = list.parentNode.ver
 }
 
 func (list *BasicNodeList) GetLength() int {
-	if list.listVer != list.parentNode.getChildListVer() {
-		list.buildList()
-	}
+	list.buildList()
 	return len(list.list)
 }
 
 func (list *BasicNodeList) Item(i int) Node {
-	if list.listVer != list.parentNode.getChildListVer() {
-		list.buildList()
+	list.buildList()
+	if i < 0 || i >= len(list.list) {
+		return nil
 	}
-	return list.list[i].(Node)
+	return list.list[i]
 }

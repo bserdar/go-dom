@@ -1,3 +1,3 @@
 module github.com/bserdar/go-dom
 
-go 1.17
+go 1.19

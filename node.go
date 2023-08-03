@@ -13,77 +13,6 @@ const DOCUMENT_TYPE_NODE NodeType = 10
 const DOCUMENT_FRAGMENT_NODE NodeType = 11
 
 type Node interface {
-	// Adds the specified childNode argument as the last child to the
-	// current node. If the argument referenced an existing node on the
-	// DOM tree, the node will be detached from its current position and
-	// attached at the new position.
-	//
-	// Returns a Node that is the appended child (aChild), except when aChild
-	// is a DocumentFragment, in which case the empty DocumentFragment
-	// is returned.
-	AppendChild(Node) Node
-
-	// Clone a Node, and optionally, all of its contents. By default, it
-	// clones the content of the node.
-	//
-	// Returns the new Node cloned. The cloned node has no parent and is not
-	// part of the document, until it is added to another node that is
-	// part of the document, using Node.appendChild() or a similar
-	// method.
-	CloneNode(deep bool) Node
-
-	// Returns true or false value indicating whether or not a node is a
-	// descendant of the calling node.
-	Contains(Node) bool
-
-	// Returns the object's root
-	GetRootNode() Node
-
-	// Returns a boolean value indicating whether or not the element has
-	// any child nodes.
-	HasChildNodes() bool
-
-	// Inserts a Node before the reference node as a child of a
-	// specified parent node. Returns the added child (unless newNode is
-	// a DocumentFragment, in which case the empty DocumentFragment is
-	// returned).
-	InsertBefore(newNode, referenceNode Node) Node
-
-	// Accepts a namespace URI as an argument and returns a boolean value
-	// with a value of true if the namespace is the default namespace on
-	// the given node or false if not.
-	IsDefaultNamespace(uri string) bool
-
-	// Returns a boolean value which indicates whether or not two nodes
-	// are of the same type and all their defining data points match.
-	IsEqualNode(Node) bool
-
-	// Returns a boolean value indicating whether or not the two nodes are
-	// the same (that is, they reference the same object).
-	IsSameNode(Node) bool
-
-	// Returns a string  containing the prefix for a given namespace
-	// URI, if present, and "" if not. When multiple prefixes are
-	// possible, the result is implementation-dependent.
-	LookupPrefix(string) string
-
-	// Accepts a prefix and returns the namespace URI associated with it
-	// on the given node if found (and "" if not). Supplying "" for
-	// the prefix will return the default namespace.
-	LookupNamespaceURI(string) string
-
-	// Clean up all the text nodes under this element (merge adjacent,
-	// remove empty).
-	Normalize()
-
-	// Removes a child node from the current element, which must be a
-	// child of the current node.
-	RemoveChild(Node)
-
-	// Replaces one child Node of the current one with the second one
-	// given in parameter.
-	ReplaceChild(newChild, oldChild Node)
-
 	// Returns a live NodeList containing all the children of this node
 	// (including elements, text and comments). NodeList being live means
 	// that if the children of the Node change, the NodeList object is
@@ -130,6 +59,78 @@ type Node interface {
 	// Returns a Node representing the previous node in the tree, or null
 	// if there isn't such node.
 	GetPreviousSibling() Node
+
+	// Adds the specified childNode argument as the last child to the
+	// current node. If the argument referenced an existing node on the
+	// DOM tree, the node will be detached from its current position and
+	// attached at the new position.
+	//
+	// Returns a Node that is the appended child (aChild), except when aChild
+	// is a DocumentFragment, in which case the empty DocumentFragment
+	// is returned.
+	AppendChild(Node) Node
+
+	// Returns a boolean value indicating whether or not the element has
+	// any child nodes.
+	HasChildNodes() bool
+
+	// Inserts a Node before the reference node as a child of a
+	// specified parent node. Returns the added child (unless newNode is
+	// a DocumentFragment, in which case the empty DocumentFragment is
+	// returned).
+	InsertBefore(newNode, referenceNode Node) Node
+
+	// Removes a child node from the current element, which must be a
+	// child of the current node.
+	RemoveChild(Node)
+
+	// // Clone a Node, and optionally, all of its contents.
+	// //
+	// // Returns the new Node cloned. The cloned node has no parent and is not
+	// // part of the document, until it is added to another node that is
+	// // part of the document, using Node.appendChild() or a similar
+	// // method.
+	// CloneNode(deep bool) Node
+
+	// // Returns true or false value indicating whether or not a node is a
+	// // descendant of the calling node.
+	// Contains(Node) bool
+
+	// // Returns the object's root
+	// GetRootNode() Node
+
+	// // Accepts a namespace URI as an argument and returns a boolean value
+	// // with a value of true if the namespace is the default namespace on
+	// // the given node or false if not.
+	// IsDefaultNamespace(uri string) bool
+
+	// // Returns a boolean value which indicates whether or not two nodes
+	// // are of the same type and all their defining data points match.
+	// IsEqualNode(Node) bool
+
+	// // Returns a boolean value indicating whether or not the two nodes are
+	// // the same (that is, they reference the same object).
+	// IsSameNode(Node) bool
+
+	// // Returns a string  containing the prefix for a given namespace
+	// // URI, if present, and "" if not. When multiple prefixes are
+	// // possible, the result is implementation-dependent.
+	// LookupPrefix(string) string
+
+	// // Accepts a prefix and returns the namespace URI associated with it
+	// // on the given node if found (and "" if not). Supplying "" for
+	// // the prefix will return the default namespace.
+	// LookupNamespaceURI(string) string
+
+	// // Clean up all the text nodes under this element (merge adjacent,
+	// // remove empty).
+	// Normalize()
+
+	// // Replaces one child Node of the current one with the second one
+	// // given in parameter.
+	// ReplaceChild(newChild, oldChild Node)
+
+	treeNode() *treeNode
 }
 
 type NodeList interface {
