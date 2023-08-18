@@ -13,16 +13,16 @@ type Attr interface {
 	// prefix is xml, the returned qualified name is xml:lang.
 	GetName() string
 
-	// A String representing the URI of the namespace of the attribute, or
-	// null if there is no namespace.
-	GetNamespaceURI() string
-
 	// The Element the attribute belongs to.
 	GetOwnerElement() Element
 
-	// A String representing the namespace prefix of the attribute, or
-	// null if a namespace without prefix or no namespace are specified.
-	GetPrefix() string
+	// // A String representing the URI of the namespace of the attribute, or
+	// // null if there is no namespace.
+	// GetNamespaceURI() string
+
+	// // A String representing the namespace prefix of the attribute, or
+	// // null if a namespace without prefix or no namespace are specified.
+	// GetPrefix() string
 
 	// The attribute's value, a string that can be set and get using this
 	// property.

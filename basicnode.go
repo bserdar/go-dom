@@ -2,34 +2,9 @@ package dom
 
 // basicNode implements the common functionality for DOM nodes
 type basicNode struct {
-	treeNode
+	tnode
 	ownerDocument    *BasicDocument
 	defaultNamespace string
-}
-
-// Adds the specified childNode argument as the last child to the
-// current node. If the argument referenced an existing node on the
-// DOM tree, the node will be detached from its current position and
-// attached at the new position.
-//
-// Returns a Node that is the appended child (aChild), except when aChild
-// is a DocumentFragment, in which case the empty DocumentFragment
-// is returned.
-func appendChild(parent, childNode Node) Node {
-	if childNode.GetOwnerDocument() != parent.GetOwnerDocument() {
-		panic("Child node does not belong to the target document. Use AdoptNode to adopt it.")
-	}
-	// Document fragment?
-	if frag, ok := childNode.(DocumentFragment); ok {
-		for child := frag.GetFirstChild(); child != nil; {
-			detachChild(frag, childNode)
-			insertChildAfter(parent, child, nil)
-		}
-		return frag
-	}
-	detachChild(parent, childNode)
-	insertChildAfter(parent, childNode, nil)
-	return childNode
 }
 
 // Returns true or false value indicating whether or not a node is a
@@ -57,10 +32,169 @@ func getRootNode(node Node) Node {
 	}
 }
 
+func (node *basicNode) treeNode() *tnode { return &node.tnode }
+
+func (node *basicNode) GetNodeName() string {
+	panic("basicNode.GetNodeName should not have been called")
+}
+
+func (node *basicNode) GetNodeType() NodeType {
+	panic("basicNode.GetNodeType should not have been called")
+}
+
+func (node *basicNode) IsEqualNode(Node) bool {
+	panic("basicNode.IsEqualNode should not have been called")
+}
+
 // Returns a boolean value indicating whether or not the element has
 // any child nodes.
 func (node *basicNode) HasChildNodes() bool {
 	return node.child != nil
+}
+
+// Clean up all the text nodes under this element (merge adjacent,
+// remove empty).
+func (node *basicNode) Normalize() {
+	for child := node.GetFirstChild(); child != nil; child = child.GetNextSibling() {
+		child.Normalize()
+	}
+}
+
+// Returns a Node representing the first direct child node of the
+// node, or null if the node has no child.
+func (node *basicNode) GetFirstChild() Node {
+	return node.firstChild()
+}
+
+// Returns a Node representing the last direct child node of the node,
+// or null if the node has no child.
+func (node *basicNode) GetLastChild() Node {
+	return node.lastChild()
+}
+
+// Returns a Node representing the next node in the tree, or null if
+// there isn't such node.
+func (node *basicNode) GetNextSibling() Node {
+	return node.nextSibling()
+}
+
+// Returns the Document that this node belongs to. If the node is
+// itself a document, returns null.
+func (node *basicNode) GetOwnerDocument() Document {
+	return node.ownerDocument
+}
+
+// Returns a Node that is the parent of this node. If there is no such
+// node, like if this node is the top of the tree or if doesn't
+// participate in a tree, this property returns null.
+func (node *basicNode) GetParentNode() Node {
+	return node.parent
+}
+
+// Returns an Element that is the parent of this node. If the node has
+// no parent, or if that parent is not an Element, this property
+// returns null.
+func (node *basicNode) GetParentElement() Element {
+	for trc := node.parent; trc != nil; trc = trc.GetParentNode() {
+		if doc, ok := trc.(Element); ok {
+			return doc
+		}
+	}
+	return nil
+}
+
+// Returns a Node representing the previous node in the tree, or null
+// if there isn't such node.
+func (node *basicNode) GetPreviousSibling() Node {
+	return node.prevSibling()
+}
+
+// Returns a live NodeList containing all the children of this node
+// (including elements, text and comments). NodeList being live means
+// that if the children of the Node change, the NodeList object is
+// automatically updated.
+func (node *basicNode) GetChildNodes() NodeList {
+	return newBasicNodeList(node)
+}
+
+// Inserts a Node before the reference node as a child of a
+// specified parent node. Returns the added child (unless newNode is
+// a DocumentFragment, in which case the empty DocumentFragment is
+// returned).
+//
+// Algorithm: To ensure pre-insertion validity of a node into a parent
+// before a child, run these steps:
+//
+// If parent is not a Document, DocumentFragment, or Element node,
+// then throw a "HierarchyRequestError" DOMException.
+//
+// If node is a host-including inclusive ancestor of parent, then
+// throw a "HierarchyRequestError" DOMException.
+//
+// If child is non-null and its parent is not parent, then throw a
+// "NotFoundError" DOMException.
+//
+// If node is not a DocumentFragment, DocumentType, Element, or
+// CharacterData node, then throw a "HierarchyRequestError"
+// DOMException.
+//
+// If either node is a Text node and parent is a document, or node is
+// a doctype and parent is not a document, then throw a
+// "HierarchyRequestError" DOMException.
+//
+// If parent is a document, and any of the statements below, switched
+// on the interface node implements, are true, then throw a
+// "HierarchyRequestError" DOMException.
+//
+// DocumentFragment: If node has more than one element child or has a
+// Text node child. Otherwise, if node has one element child and
+// either parent has an element child, child is a doctype, or child is
+// non-null and a doctype is following child.
+//
+// Element: parent has an element child, child is a doctype, or child
+// is non-null and a doctype is following child.
+//
+// DocumentType: parent has a doctype child, child is non-null and an
+// element is preceding child, or child is null and parent has an
+// element child.
+//
+// To pre-insert a node into a parent before a child, run these steps:
+
+// Ensure pre-insertion validity of node into parent before child.
+
+// Let referenceChild be child.
+
+// If referenceChild is node, then set referenceChild to node’s next sibling.
+
+// Insert newNode into node before referenceChild.
+
+// Return node.
+func (node *basicNode) InsertBefore(newNode, referenceNode Node) (Node, error) {
+	if err := validatePreInsertion(newNode, node, referenceNode, "InsertBefore"); err != nil {
+		return nil, err
+	}
+	return insertBefore(node, newNode, referenceNode), nil
+}
+
+// Append newNode as a child of node
+func (node *basicNode) AppendChild(newNode Node) (Node, error) {
+	if err := validatePreInsertion(newNode, node, nil, "AppendChild"); err != nil {
+		return nil, err
+	}
+	return insertBefore(node, newNode, nil), nil
+}
+
+// Remove child from node
+func (node *basicNode) RemoveChild(child Node) error {
+	if child.GetParentNode() != node {
+		return ErrDOM{
+			Typ: NOT_FOUND_ERR,
+			Msg: "Wrong parent",
+			Op:  "RemoveChild",
+		}
+	}
+	detachChild(node, child)
+	return nil
 }
 
 // Inserts a Node before the reference node as a child of a
@@ -206,124 +340,4 @@ func validatePreInsertion(node, parent, beforeChild Node, op string) error {
 		}
 	}
 	return nil
-}
-
-// Clean up all the text nodes under this element (merge adjacent,
-// remove empty).
-func (node *basicNode) Normalize() {
-	for child := node.GetFirstChild(); child != nil; child = child.GetNextSibling() {
-		child.Normalize()
-	}
-}
-
-// Returns a Node representing the first direct child node of the
-// node, or null if the node has no child.
-func (node *basicNode) GetFirstChild() Node {
-	return node.firstChild()
-}
-
-// Returns a Node representing the last direct child node of the node,
-// or null if the node has no child.
-func (node *basicNode) GetLastChild() Node {
-	return node.lastChild()
-}
-
-// Returns a Node representing the next node in the tree, or null if
-// there isn't such node.
-func (node *basicNode) GetNextSibling() Node {
-	return node.nextSibling()
-}
-
-// Returns the Document that this node belongs to. If the node is
-// itself a document, returns null.
-func (node *basicNode) GetOwnerDocument() Document {
-	return node.ownerDocument
-}
-
-// Returns a Node that is the parent of this node. If there is no such
-// node, like if this node is the top of the tree or if doesn't
-// participate in a tree, this property returns null.
-func (node *basicNode) GetParentNode() Node {
-	return node.parent
-}
-
-// Returns an Element that is the parent of this node. If the node has
-// no parent, or if that parent is not an Element, this property
-// returns null.
-func (node *basicNode) GetParentElement() Element {
-	for trc := node.parent; trc != nil; trc = trc.GetParentNode() {
-		if doc, ok := trc.(Element); ok {
-			return doc
-		}
-	}
-	return nil
-}
-
-// Returns a Node representing the previous node in the tree, or null
-// if there isn't such node.
-func (node *basicNode) GetPreviousSibling() Node {
-	return node.prevSibling()
-}
-
-// Returns a live NodeList containing all the children of this node
-// (including elements, text and comments). NodeList being live means
-// that if the children of the Node change, the NodeList object is
-// automatically updated.
-func (node *basicNode) GetChildNodes() NodeList {
-	return newBasicNodeList(node)
-}
-
-// Inserts a Node before the reference node as a child of a
-// specified parent node. Returns the added child (unless newNode is
-// a DocumentFragment, in which case the empty DocumentFragment is
-// returned).
-//
-// Algorithm: To ensure pre-insertion validity of a node into a parent
-// before a child, run these steps:
-//
-// If parent is not a Document, DocumentFragment, or Element node,
-// then throw a "HierarchyRequestError" DOMException.
-//
-// If node is a host-including inclusive ancestor of parent, then
-// throw a "HierarchyRequestError" DOMException.
-//
-// If child is non-null and its parent is not parent, then throw a
-// "NotFoundError" DOMException.
-//
-// If node is not a DocumentFragment, DocumentType, Element, or
-// CharacterData node, then throw a "HierarchyRequestError"
-// DOMException.
-//
-// If either node is a Text node and parent is a document, or node is
-// a doctype and parent is not a document, then throw a
-// "HierarchyRequestError" DOMException.
-//
-// If parent is a document, and any of the statements below, switched
-// on the interface node implements, are true, then throw a
-// "HierarchyRequestError" DOMException.
-//
-// DocumentFragment: If node has more than one element child or has a
-// Text node child. Otherwise, if node has one element child and
-// either parent has an element child, child is a doctype, or child is
-// non-null and a doctype is following child.
-//
-// Element: parent has an element child, child is a doctype, or child
-// is non-null and a doctype is following child.
-//
-// DocumentType: parent has a doctype child, child is non-null and an
-// element is preceding child, or child is null and parent has an
-// element child.
-//
-// To pre-insert a node into a parent before a child, run these steps:
-
-// Ensure pre-insertion validity of node into parent before child.
-
-// Let referenceChild be child.
-
-// If referenceChild is node, then set referenceChild to node’s next sibling.
-
-// Insert node into parent before referenceChild.
-
-// Return node.
-func (node *basicNode) InsertBefore(newNode, referenceNode Node) (Node, error) {
 }

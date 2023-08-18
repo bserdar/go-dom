@@ -15,18 +15,6 @@ type BasicDocument struct {
 
 var _ Document = &BasicDocument{}
 
-// Adds the specified childNode argument as the last child to the
-// current node. If the argument referenced an existing node on the
-// DOM tree, the node will be detached from its current position and
-// attached at the new position.
-//
-// Returns a Node that is the appended child (aChild), except when aChild
-// is a DocumentFragment, in which case the empty DocumentFragment
-// is returned.
-func (doc *BasicDocument) AppendChild(node Node) Node {
-	return appendChild(doc, node)
-}
-
 // Returns "#document"
 func (doc *BasicDocument) GetNodeName() string { return "#document" }
 
@@ -86,23 +74,23 @@ func (doc *BasicDocument) GetNodeType() NodeType { return DOCUMENT_NODE }
 // 	return el.IsDefaultNamespace(uri)
 // }
 
-// // Returns a boolean value which indicates whether or not two nodes
-// // are of the same type and all their defining data points match.
-// func (doc *BasicDocument) IsEqualNode(node Node) bool {
-// 	nodeDoc, ok := node.(*Document)
-// 	if !ok {
-// 		return false
-// 	}
-// 	if nodeDoc.encoding != doc.encoding ||
-// 		nodeDoc.contentType != doc.contentType ||
-// 		nodeDoc.url != doc.url ||
-// 		nodeDoc.origin != doc.origin ||
-// 		nodeDoc.typ != doc.typ ||
-// 		nodeDoc.mode != doc.mode {
-// 		return false
-// 	}
-// 	return isEqualNode(doc, node)
-// }
+// Returns a boolean value which indicates whether or not two nodes
+// are of the same type and all their defining data points match.
+func (doc *BasicDocument) IsEqualNode(node Node) bool {
+	nodeDoc, ok := node.(*BasicDocument)
+	if !ok {
+		return false
+	}
+	if nodeDoc.encoding != doc.encoding ||
+		nodeDoc.contentType != doc.contentType ||
+		nodeDoc.url != doc.url ||
+		nodeDoc.origin != doc.origin ||
+		nodeDoc.typ != doc.typ ||
+		nodeDoc.mode != doc.mode {
+		return false
+	}
+	return isEqualNode(doc, node)
+}
 
 // // Returns a boolean value indicating whether or not the two nodes are
 // // the same (that is, they reference the same object).
@@ -142,18 +130,6 @@ func (doc *BasicDocument) GetNodeType() NodeType { return DOCUMENT_NODE }
 // 	el.Normalize()
 // }
 
-// // Removes a child node from the current element, which must be a
-// // child of the current node.
-// func (doc *BasicDocument) RemoveChild(node Node) {
-// 	el := doc.GetDocumentElement()
-// 	if el == nil {
-// 		return
-// 	}
-// 	if el == node {
-// 		detachChild(doc, el)
-// 	}
-// }
-
 // // Replaces one child Node of the current one with the second one
 // // given in parameter.
 // func (doc *BasicDocument) ReplaceChild(newChild, oldChild Node) {
@@ -179,21 +155,6 @@ func (doc *BasicDocument) GetNodeType() NodeType { return DOCUMENT_NODE }
 // // automatically updated.
 // func (doc *BasicDocument) GetChildNodes() NodeList {
 // 	return newBasicNodeLisr(doc)
-// }
-
-// // Returns a String containing the name of the Node. The structure of
-// // the name will differ with the node type. E.g. An HTMLElement will
-// // contain the name of the corresponding tag, like 'audio' for an
-// // HTMLAudioElement, a Text node will have the '#text' string, or a
-// // Document node will have the '#document' string.
-// func (doc *BasicDocument) GetNodeName() string {
-// 	return "#document"
-// }
-
-// // Returns an unsigned short representing the type of the
-// // node.
-// func (doc *BasicDocument) GetNodeType() NodeType {
-// 	return DOCUMENT_NODE
 // }
 
 // // Returns the Element that is a direct child of the document.

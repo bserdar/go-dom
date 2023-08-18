@@ -1,5 +1,9 @@
 package dom
 
+import (
+	"fmt"
+)
+
 const (
 	INDEX_SIZE_ERR              = "INDEX_SIZE"
 	DOMSTRING_SIZE_ERR          = "DOMSTRING_SIZE"
@@ -35,12 +39,12 @@ type ErrDOM struct {
 }
 
 func (e ErrDOM) Error() string {
-	return fmt.Errorf("%s.%s: %s", e.Op, e.Typ, e.Msg)
+	return fmt.Sprintf("%s.%s: %s", e.Op, e.Typ, e.Msg)
 }
 
 func ErrHierarchyRequest(op, msg string) ErrDOM {
 	return ErrDOM{
-		Typ: HIERARCHY_REQUEST,
+		Typ: HIERARCHY_REQUEST_ERR,
 		Msg: msg,
 		Op:  op,
 	}

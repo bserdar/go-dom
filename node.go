@@ -68,7 +68,7 @@ type Node interface {
 	// Returns a Node that is the appended child (aChild), except when aChild
 	// is a DocumentFragment, in which case the empty DocumentFragment
 	// is returned.
-	AppendChild(Node) Node
+	AppendChild(Node) (Node, error)
 
 	// Returns a boolean value indicating whether or not the element has
 	// any child nodes.
@@ -78,11 +78,11 @@ type Node interface {
 	// specified parent node. Returns the added child (unless newNode is
 	// a DocumentFragment, in which case the empty DocumentFragment is
 	// returned).
-	InsertBefore(newNode, referenceNode Node) Node
+	InsertBefore(newNode, referenceNode Node) (Node, error)
 
 	// Removes a child node from the current element, which must be a
 	// child of the current node.
-	RemoveChild(Node)
+	RemoveChild(Node) error
 
 	// // Clone a Node, and optionally, all of its contents.
 	// //
@@ -104,9 +104,9 @@ type Node interface {
 	// // the given node or false if not.
 	// IsDefaultNamespace(uri string) bool
 
-	// // Returns a boolean value which indicates whether or not two nodes
-	// // are of the same type and all their defining data points match.
-	// IsEqualNode(Node) bool
+	// Returns a boolean value which indicates whether or not two nodes
+	// are of the same type and all their defining data points match.
+	IsEqualNode(Node) bool
 
 	// // Returns a boolean value indicating whether or not the two nodes are
 	// // the same (that is, they reference the same object).
@@ -122,15 +122,15 @@ type Node interface {
 	// // the prefix will return the default namespace.
 	// LookupNamespaceURI(string) string
 
-	// // Clean up all the text nodes under this element (merge adjacent,
-	// // remove empty).
-	// Normalize()
+	// Clean up all the text nodes under this element (merge adjacent,
+	// remove empty).
+	Normalize()
 
 	// // Replaces one child Node of the current one with the second one
 	// // given in parameter.
 	// ReplaceChild(newChild, oldChild Node)
 
-	treeNode() *treeNode
+	treeNode() *tnode
 }
 
 type NodeList interface {

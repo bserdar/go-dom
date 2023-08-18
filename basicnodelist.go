@@ -1,7 +1,7 @@
 package dom
 
 type BasicNodeList struct {
-	parentNode *treeNode
+	parentNode Node
 
 	list []Node
 	ver  int
@@ -9,7 +9,7 @@ type BasicNodeList struct {
 
 func newBasicNodeList(parent Node) *BasicNodeList {
 	ret := &BasicNodeList{
-		parentNode: parent.treeNode(),
+		parentNode: parent,
 		list:       nil,
 		ver:        0,
 	}
@@ -17,17 +17,17 @@ func newBasicNodeList(parent Node) *BasicNodeList {
 }
 
 func (list *BasicNodeList) buildList() {
-	if list.list != nil && list.ver != list.parentNode.ver {
+	if list.list != nil && list.ver != list.parentNode.treeNode().ver {
 		list.list = nil
 	}
-	if list.list != nil && list.ver == list.parentNode.ver {
+	if list.list != nil && list.ver == list.parentNode.treeNode().ver {
 		return
 	}
 	list.list = make([]Node, 0)
 	for itr := list.parentNode.GetFirstChild(); itr != nil; itr = itr.GetNextSibling() {
 		list.list = append(list.list, itr)
 	}
-	list.listVer = list.parentNode.ver
+	list.ver = list.parentNode.treeNode().ver
 }
 
 func (list *BasicNodeList) GetLength() int {

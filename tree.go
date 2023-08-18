@@ -1,6 +1,6 @@
 package dom
 
-type treeNode struct {
+type tnode struct {
 	parent Node
 	next   Node
 	prev   Node
@@ -9,18 +9,18 @@ type treeNode struct {
 	ver int
 }
 
-func (node *treeNode) firstChild() Node {
+func (node *tnode) firstChild() Node {
 	return node.child
 }
 
-func (node *treeNode) lastChild() Node {
+func (node *tnode) lastChild() Node {
 	if node.child == nil {
 		return nil
 	}
 	return node.child.treeNode().prev
 }
 
-func (node *treeNode) prevSibling() Node {
+func (node *tnode) prevSibling() Node {
 	if node.parent == nil {
 		return nil
 	}
@@ -30,7 +30,7 @@ func (node *treeNode) prevSibling() Node {
 	return node.prev
 }
 
-func (node *treeNode) nextSibling() Node {
+func (node *tnode) nextSibling() Node {
 	if node.parent == nil {
 		return nil
 	}

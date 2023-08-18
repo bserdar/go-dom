@@ -4,7 +4,6 @@ type Element interface {
 	Node
 
 	GetAttributes() NamedNodeMap
-	GetID() string
 
 	// Returns a String with the name of the tag for the given element.
 	GetTagName() string
@@ -18,7 +17,7 @@ type Element interface {
 	GetLocalName() string
 
 	// The namespace URI of the element, or "" if it is no namespace.}
-	GetNamespaceURI() string
+	//	GetNamespaceURI() string
 
 	GetFirstElementChild() Element
 	GetLastElementChild() Element

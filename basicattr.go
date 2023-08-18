@@ -3,68 +3,69 @@ package dom
 type BasicAttr struct {
 	basicNode
 
-	name  QName
-	space string
+	name Name
+
 	value string
 }
 
 var _ Attr = &BasicAttr{}
 
-// // A String representing the local part of the qualified name of the
-// // attribute.
-// func (attr *BasicAttr) GetLocalName() string {
-// 	return attr.name.Local
-// }
+// A String representing the local part of the qualified name of the
+// attribute.
+func (attr *BasicAttr) GetLocalName() string {
+	return attr.name.local
+}
 
-// // Returns the qualified name of an attribute, that is the name of
-// // the attribute, with the namespace prefix, if any, in front of
-// // it. For example, if the local name is lang and the namespace
-// // prefix is xml, the returned qualified name is xml:lang.
-// func (attr *BasicAttr) GetName() string {
-// 	return attr.name.String()
-// }
+// Returns the qualified name of an attribute, that is the name of
+// the attribute, with the namespace prefix, if any, in front of
+// it. For example, if the local name is lang and the namespace
+// prefix is xml, the returned qualified name is xml:lang.
+func (attr *BasicAttr) GetName() string {
+	return attr.name.QName()
+}
 
-// // A String representing the URI of the namespace of the attribute, or
-// // null if there is no namespace.
-// func (attr *BasicAttr) GetNamespaceURI() string {
-// 	return attr.space
-// }
+// The Element the attribute belongs to.
+func (attr *BasicAttr) GetOwnerElement() Element {
+	if el, ok := attr.parent.(Element); ok {
+		return el
+	}
+	return nil
+}
 
-// // The Element the attribute belongs to.
-// func (attr *BasicAttr) GetOwnerElement() Element {
-// 	if el, ok := attr.parent.(Element); ok {
-// 		return el
-// 	}
-// 	return nil
-// }
+// The attribute's value, a string that can be set and get using this
+// property.
+func (attr *BasicAttr) GetValue() string {
+	return attr.value
+}
 
-// // A String representing the namespace prefix of the attribute, or
-// // null if a namespace without prefix or no namespace are specified.
-// func (attr *BasicAttr) GetPrefix() string {
-// 	return attr.name.Prefix
-// }
+func (attr *BasicAttr) SetValue(v string) {
+	attr.value = v
+}
 
-// // The attribute's value, a string that can be set and get using this
-// // property.
-// func (attr *BasicAttr) GetValue() string {
-// 	return attr.value
-// }
+func (attr *BasicAttr) CloneNode(bool) Node {
+	ret := BasicAttr{
+		basicNode: basicNode{
+			ownerDocument:    attr.ownerDocument,
+			defaultNamespace: attr.defaultNamespace,
+		},
+		name:  attr.name,
+		value: attr.value,
+	}
+	return &ret
+}
 
-// func (attr *BasicAttr) SetValue(v string) {
-// 	attr.value = v
-// }
+func (attr *BasicAttr) GetNodeName() string {
+	return attr.GetName()
+}
 
-// func (attr *BasicAttr) CloneNode(bool) Node {
-// 	ret := BasicAttr{
-// 		name:  attr.name,
-// 		space: attr.space,
-// 		value: attr.value,
-// 	}
-// 	return &ret
-// }
+func (attr *BasicAttr) GetNodeType() NodeType { return ATTRIBUTE_NODE }
 
-// func (attr *BasicAttr) GetNodeName() string {
-// 	return attr.name.String()
-// }
-
-// func (attr *BasicAttr) GetNodeType() NodeType { return ATTRIBUTE_NODE }
+// Returns a boolean value which indicates whether or not two nodes
+// are of the same type and all their defining data points match.
+func (attr *BasicAttr) IsEqualNode(node Node) bool {
+	a, ok := node.(*BasicAttr)
+	if !ok {
+		return false
+	}
+	return a.name == attr.name && a.value == attr.value
+}
