@@ -84,10 +84,12 @@ func insertChildBefore(parent, newChild, before Node) {
 
 func detachChild(parent, child Node) {
 	childtn := child.treeNode()
-	parenttn := parent.treeNode()
-	parenttn.ver++
-	if parenttn.child == child {
-		parenttn.child = childtn.next
+	if parent != nil {
+		parenttn := parent.treeNode()
+		parenttn.ver++
+		if parenttn.child == child {
+			parenttn.child = childtn.next
+		}
 	}
 	childtn.next.treeNode().prev = childtn.prev
 	childtn.prev.treeNode().next = childtn.next

@@ -82,10 +82,10 @@ func prevElementSibling(start Node) Element {
 	return nil
 }
 
-// // Removes the element from the children list of its parent.
-// func (el *BasicElement) Remove() {
-// 	el.detach()
-// }
+// Removes the element from the children list of its parent.
+func (el *BasicElement) Remove() {
+	detachChild(el.GetParentNode(), el)
+}
 
 func (el *BasicElement) GetAttributes() NamedNodeMap {
 	return &el.attributes
@@ -148,16 +148,24 @@ func (el *BasicElement) HasAttributeNS(uri string, name string) bool {
 	return el.GetAttributeNodeNS(uri, name) != nil
 }
 
-// // 	// Removes the named attribute from the current node.
-// // 	RemoveAttribute(string)
+// Removes the named attribute from the current node.
+func (el *BasicElement) RemoveAttribute(name string) {
+	el.attributes.RemoveNamedItem(name)
+}
 
-// // 	// Removes the node representation of the named attribute from the
-// // 	// current node.
-// // 	RemoveAttributeNode(Attr)
+// Removes the node representation of the named attribute from the
+// current node.
+func (el *BasicElement) RemoveAttributeNode(attr Attr) {
+	if attr.GetParentElement() == el {
+		el.attributes.removeAttr(attr)
+	}
+}
 
-// // 	// Removes the attribute with the specified name and namespace, from
-// // 	// the current node.
-// // 	RemoveAttributeNS(uri string, name string)
+// Removes the attribute with the specified name and namespace, from
+// the current node.
+func (el *BasicElement) RemoveAttributeNS(uri string, name string) {
+	el.attributes.RemoveNamedItemNS(uri, name)
+}
 
 // // 	// Replaces the existing children of a Node with a specified new set
 // // 	// of children.

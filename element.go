@@ -69,11 +69,11 @@ type Element interface {
 
 	// Replaces the existing children of a Node with a specified new set
 	// of children.
-	ReplaceChildren(...Node)
+	//	ReplaceChildren(...Node)
 
 	// Replaces the element in the children list of its parent with a
 	// set of Node or DOMString objects.
-	ReplaceWith(...Node)
+	//	ReplaceWith(...Node)
 
 	// Sets the value of a named attribute of the current node.
 	SetAttribute(name string, value string)

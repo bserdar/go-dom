@@ -15,8 +15,7 @@ func (m *BasicNamedNodeMap) GetLength() int {
 
 // Returns a Attr, corresponding to the given name.
 func (m *BasicNamedNodeMap) GetNamedItem(name string) Attr {
-	qname := ParseName(name)
-	return m.mapAttrs[qname.QName()]
+	return m.mapAttrs[name]
 }
 
 // Returns a Attr identified by a namespace and related local name.
@@ -38,8 +37,12 @@ func (m *BasicNamedNodeMap) Item(index int) Attr {
 
 // Removes the Attr identified by the given name
 func (m *BasicNamedNodeMap) RemoveNamedItem(name string) {
-	nm := ParseName(name)
-	m.RemoveNamedItemNS(nm.ns, nm.local)
+	attr, exists := m.mapAttrs[name]
+	if !exists {
+		return
+	}
+	ba := attr.(*BasicAttr)
+	m.RemoveNamedItemNS(ba.name.ns, ba.name.local)
 }
 
 // RemoveNamedItemNS removes the Attr identified by the given name
@@ -53,10 +56,11 @@ func (m *BasicNamedNodeMap) RemoveNamedItemNS(uri string, name string) {
 	if !exists {
 		return
 	}
-	m.removeAttr(qname, attr)
+	m.removeAttr(attr)
 }
 
-func (m *BasicNamedNodeMap) removeAttr(qname string, attr Attr) {
+func (m *BasicNamedNodeMap) removeAttr(attr Attr) {
+	qname := attr.(*BasicAttr).name.QName()
 	delete(m.mapAttrs, qname)
 	w := 0
 	for k := range m.attrs {
