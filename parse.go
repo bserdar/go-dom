@@ -145,7 +145,7 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 			elementStack = elementStack[:len(elementStack)-1]
 
 		case xml.CharData:
-			if len(elementStack) == 0 {
+			if len(elementStack) == 1 {
 				// charData must be only spaces
 				for _, x := range string(token) {
 					if !unicode.IsSpace(x) {
@@ -160,19 +160,19 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 			}
 
 		case xml.Comment:
-			if len(elementStack) == 0 {
+			if len(elementStack) == 1 {
 				return nil, &xml.SyntaxError{
 					Msg: "Comment before document",
 				}
 			}
 		case xml.ProcInst:
-			if len(elementStack) == 0 {
+			if len(elementStack) == 1 {
 				return nil, &xml.SyntaxError{
 					Msg: "Processing instruction before document",
 				}
 			}
 		case xml.Directive:
-			if len(elementStack) == 0 {
+			if len(elementStack) == 1 {
 				return nil, &xml.SyntaxError{
 					Msg: "XML directive before document",
 				}

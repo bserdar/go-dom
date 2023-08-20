@@ -204,30 +204,29 @@ func (el *BasicElement) SetAttributeNodeNS(attr Attr) {
 	el.attributes.SetNamedItemNS(attr)
 }
 
-func (el *BasicElement) InsertBefore(newNode, referenceNode Node) (Node, error) {
+func (el *BasicElement) InsertBefore(newNode, referenceNode Node) Node {
 	if err := validatePreInsertion(newNode, el, referenceNode, "InsertBefore"); err != nil {
-		return nil, err
+		panic(err)
 	}
-	return insertBefore(el, newNode, referenceNode), nil
+	return insertBefore(el, newNode, referenceNode)
 }
 
 // Append newNode as a child of node
-func (el *BasicElement) AppendChild(newNode Node) (Node, error) {
+func (el *BasicElement) AppendChild(newNode Node) Node {
 	if err := validatePreInsertion(newNode, el, nil, "AppendChild"); err != nil {
-		return nil, err
+		panic(err)
 	}
-	return insertBefore(el, newNode, nil), nil
+	return insertBefore(el, newNode, nil)
 }
 
 // Remove child from node
-func (el *BasicElement) RemoveChild(child Node) error {
+func (el *BasicElement) RemoveChild(child Node) {
 	if child.GetParentNode() != el {
-		return ErrDOM{
+		panic(ErrDOM{
 			Typ: NOT_FOUND_ERR,
 			Msg: "Wrong parent",
 			Op:  "RemoveChild",
-		}
+		})
 	}
 	detachChild(el, child)
-	return nil
 }

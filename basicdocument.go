@@ -144,14 +144,6 @@ func (doc *BasicDocument) CreateTextNode(text string) Text {
 // 	return doc
 // }
 
-// // Inserts a Node before the reference node as a child of a
-// // specified parent node. Returns the added child (unless newNode is
-// // a DocumentFragment, in which case the empty DocumentFragment is
-// // returned).
-// func (doc *BasicDocument) InsertBefore(newNode, referenceNode Node) Node {
-// 	panic(ErrHierarchyRequest)
-// }
-
 // // Accepts a namespace URI as an argument and returns a boolean value
 // // with a value of true if the namespace is the default namespace on
 // // the given node or false if not.
@@ -256,27 +248,26 @@ func (doc *BasicDocument) GetDocumentElement() Element {
 	return first.(Element)
 }
 
-func (doc *BasicDocument) InsertBefore(newNode, referenceNode Node) (Node, error) {
-	return nil, ErrHierarchyRequest("InsertBefore", "Cannot insert before a document")
+func (doc *BasicDocument) InsertBefore(newNode, referenceNode Node) Node {
+	panic(ErrHierarchyRequest("InsertBefore", "Cannot insert before a document"))
 }
 
 // Append newNode as a child of node
-func (doc *BasicDocument) AppendChild(newNode Node) (Node, error) {
+func (doc *BasicDocument) AppendChild(newNode Node) Node {
 	if err := validatePreInsertion(newNode, doc, nil, "AppendChild"); err != nil {
-		return nil, err
+		panic(err)
 	}
-	return insertBefore(doc, newNode, nil), nil
+	return insertBefore(doc, newNode, nil)
 }
 
 // Remove child from node
-func (doc *BasicDocument) RemoveChild(child Node) error {
+func (doc *BasicDocument) RemoveChild(child Node) {
 	if child.GetParentNode() != doc {
-		return ErrDOM{
+		panic(ErrDOM{
 			Typ: NOT_FOUND_ERR,
 			Msg: "Wrong parent",
 			Op:  "RemoveChild",
-		}
+		})
 	}
 	detachChild(doc, child)
-	return nil
 }

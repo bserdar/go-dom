@@ -68,7 +68,7 @@ type Node interface {
 	// Returns a Node that is the appended child (aChild), except when aChild
 	// is a DocumentFragment, in which case the empty DocumentFragment
 	// is returned.
-	AppendChild(Node) (Node, error)
+	AppendChild(Node) Node
 
 	// Returns a boolean value indicating whether or not the element has
 	// any child nodes.
@@ -126,11 +126,11 @@ type Node interface {
 	// Insert newNode into node before referenceChild.
 
 	// Return node.
-	InsertBefore(newNode, referenceNode Node) (Node, error)
+	InsertBefore(newNode, referenceNode Node) Node
 
 	// Removes a child node from the current element, which must be a
 	// child of the current node.
-	RemoveChild(Node) error
+	RemoveChild(Node)
 
 	// // Clone a Node, and optionally, all of its contents.
 	// //

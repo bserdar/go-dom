@@ -8,18 +8,18 @@ type basicChardata struct {
 func (cd *basicChardata) GetValue() string     { return cd.text }
 func (cd *basicChardata) SetValue(text string) { cd.text = text }
 
-func (cd *basicChardata) AppendChild(Node) (Node, error) {
-	return nil, ErrHierarchyRequest("AppendChild", "Invalid node type")
+func (cd *basicChardata) AppendChild(Node) Node {
+	panic(ErrHierarchyRequest("AppendChild", "Invalid node type: character data node"))
 }
 
 func (cd *basicChardata) HasChildNodes() bool { return false }
 
-func (cd *basicChardata) InsertBefore(newNode, referenceNode Node) (Node, error) {
-	return nil, ErrHierarchyRequest("InsertBefore", "Invalid node type")
+func (cd *basicChardata) InsertBefore(newNode, referenceNode Node) Node {
+	panic(ErrHierarchyRequest("InsertBefore", "Invalid node type: character data node"))
 }
 
-func (cs *basicChardata) RemoveChild(Node) error {
-	return ErrHierarchyRequest("RemoveChild", "Invalid node type")
+func (cs *basicChardata) RemoveChild(Node) {
+	panic(ErrHierarchyRequest("RemoveChild", "Invalid node type: character data node"))
 }
 
 func (cs *basicChardata) Normalize() {}

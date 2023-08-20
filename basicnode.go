@@ -117,18 +117,18 @@ func (node *basicNode) GetChildNodes() NodeList {
 	return newBasicNodeList(node)
 }
 
-func (node *basicNode) InsertBefore(newNode, referenceNode Node) (Node, error) {
-	panic("basicNode.InsertBefore should not have been called")
+func (node *basicNode) InsertBefore(newNode, referenceNode Node) Node {
+	panic(ErrHierarchyRequest("InsertBefore", "Wrong node type"))
 }
 
 // Append newNode as a child of node
-func (node *basicNode) AppendChild(newNode Node) (Node, error) {
-	panic("basicNode.AppendChild should not have been called")
+func (node *basicNode) AppendChild(newNode Node) Node {
+	panic(ErrHierarchyRequest("AppendChild", "Wrong node type"))
 }
 
 // Remove child from node
-func (node *basicNode) RemoveChild(child Node) error {
-	panic("BasicNode.RemoveChild should not have been called")
+func (node *basicNode) RemoveChild(child Node) {
+	panic(ErrHierarchyRequest("RemoveChild", "Wrong node type"))
 }
 
 // Inserts a Node before the reference node as a child of a
