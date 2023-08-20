@@ -1,25 +1,90 @@
 package dom
 
+import (
+	"encoding/xml"
+)
+
 // BasicDocument implements DOM document
 //
 // Implementation is guided by https://dom.spec.whatwg.org/
 type BasicDocument struct {
 	basicNode
-	encoding    string
-	contentType string
-	url         string
-	origin      string
-	typ         string
-	mode        string
+	encoding         string
+	contentType      string
+	url              string
+	origin           string
+	typ              string
+	mode             string
+	defaultNamespace string
 }
 
 var _ Document = &BasicDocument{}
+
+func (doc *BasicDocument) getDefaultNamespace() string { return doc.defaultNamespace }
 
 // Returns "#document"
 func (doc *BasicDocument) GetNodeName() string { return "#document" }
 
 // Returns DOCUMENT_NODE
 func (doc *BasicDocument) GetNodeType() NodeType { return DOCUMENT_NODE }
+
+// Creates a new Attr object and returns it.
+func (doc *BasicDocument) CreateAttribute(name string) Attr {
+	return &BasicAttr{
+		basicNode: basicNode{
+			ownerDocument: doc,
+		},
+		name: Name{
+			Name: xml.Name{
+				Local: name,
+			},
+		},
+	}
+}
+
+// Creates a new attribute node in a given namespace and returns it.
+func (doc *BasicDocument) CreateAttributeNS(ns string, name string) Attr {
+	return &BasicAttr{
+		basicNode: basicNode{
+			ownerDocument: doc,
+		},
+		name: Name{
+			Name: xml.Name{
+				Local: name,
+				Space: ns,
+			},
+		},
+	}
+}
+
+// Creates a new element with the given tag name.
+func (doc *BasicDocument) CreateElement(tag string) Element {
+	return &BasicElement{
+		basicNode: basicNode{
+			ownerDocument: doc,
+		},
+		name: Name{
+			Name: xml.Name{
+				Local: tag,
+			},
+		},
+	}
+}
+
+// Creates a new element with the given tag name and namespace URI.
+func (doc *BasicDocument) CreateElementNS(ns string, tag string) Element {
+	return &BasicElement{
+		basicNode: basicNode{
+			ownerDocument: doc,
+		},
+		name: Name{
+			Name: xml.Name{
+				Local: tag,
+				Space: ns,
+			},
+		},
+	}
+}
 
 // // Clone a Node, and optionally, all of its contents.
 // //
@@ -86,7 +151,8 @@ func (doc *BasicDocument) IsEqualNode(node Node) bool {
 		nodeDoc.url != doc.url ||
 		nodeDoc.origin != doc.origin ||
 		nodeDoc.typ != doc.typ ||
-		nodeDoc.mode != doc.mode {
+		nodeDoc.mode != doc.mode ||
+		nodeDoc.defaultNamespace != doc.defaultNamespace {
 		return false
 	}
 	return isEqualNode(doc, node)
@@ -120,15 +186,15 @@ func (doc *BasicDocument) IsEqualNode(node Node) bool {
 // 	return el.LookupNamespaceURI(uri)
 // }
 
-// // Clean up all the text nodes under this element (merge adjacent,
-// // remove empty).
-// func (doc *BasicDocument) Normalize() {
-// 	el := doc.GetDocumentElement()
-// 	if el == nil {
-// 		return
-// 	}
-// 	el.Normalize()
-// }
+// Clean up all the text nodes under this element (merge adjacent,
+// remove empty).
+func (doc *BasicDocument) Normalize() {
+	el := doc.GetDocumentElement()
+	if el == nil {
+		return
+	}
+	el.Normalize()
+}
 
 // // Replaces one child Node of the current one with the second one
 // // given in parameter.
@@ -157,11 +223,23 @@ func (doc *BasicDocument) IsEqualNode(node Node) bool {
 // 	return newBasicNodeLisr(doc)
 // }
 
-// // Returns the Element that is a direct child of the document.
-// func (doc *BasicDocument) GetDocumentElement() Element {
-// 	first := doc.GetFirstChild()
-// 	if first == nil {
-// 		return nil
-// 	}
-// 	return first.(Element)
-// }
+// Returns the Element that is a direct child of the document.
+func (doc *BasicDocument) GetDocumentElement() Element {
+	first := doc.GetFirstChild()
+	if first == nil {
+		return nil
+	}
+	return first.(Element)
+}
+
+func (doc *BasicDocument) InsertBefore(newNode, referenceNode Node) (Node, error) {
+	return nil, ErrHierarchyRequest("InsertBefore", "Cannot insert before a document")
+}
+
+// Append newNode as a child of node
+func (doc *BasicDocument) AppendChild(newNode Node) (Node, error) {
+	if err := validatePreInsertion(newNode, doc, nil, "AppendChild"); err != nil {
+		return nil, err
+	}
+	return insertBefore(doc, newNode, nil), nil
+}

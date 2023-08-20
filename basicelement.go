@@ -3,12 +3,14 @@ package dom
 type BasicElement struct {
 	basicNode
 
-	attributes BasicNamedNodeMap
-
-	name Name
+	attributes       BasicNamedNodeMap
+	name             Name
+	defaultNamespace string
 }
 
 var _ Element = &BasicElement{}
+
+func (el *BasicElement) getDefaultNamespace() string { return el.defaultNamespace }
 
 // Returns HTML uppercased qualified name
 func (el *BasicElement) GetNodeName() string { return el.getQName() }
@@ -22,19 +24,19 @@ func (el *BasicElement) getQName() string {
 
 // Returns a String with the name of the tag for the given element.
 func (el *BasicElement) GetTagName() string {
-	return el.name.local
+	return el.name.QName()
 }
 
 // Returns a string representing the namespace prefix of the element,
 // or "" if no prefix is specified.
 func (el *BasicElement) GetPrefix() string {
-	return el.name.prefix
+	return el.name.Prefix
 }
 
 // A string representing the local part of the qualified name of the
 // element.
 func (el *BasicElement) GetLocalName() string {
-	return el.name.local
+	return el.name.Local
 }
 
 // // The namespace URI of the element, or "" if it is no namespace.}
@@ -175,18 +177,44 @@ func (el *BasicElement) RemoveAttributeNS(uri string, name string) {
 // // 	// set of Node or DOMString objects.
 // // 	ReplaceWith(...Node)
 
-// // 	// Sets the value of a named attribute of the current node.
-// // 	SetAttribute(name string, value string)
+// Sets the value of a named attribute of the current node.
+func (el *BasicElement) SetAttribute(name string, value string) {
+	attr := el.ownerDocument.CreateAttribute(name)
+	attr.SetValue(value)
+	el.attributes.SetNamedItem(attr)
+}
 
-// // 	// Sets the node representation of the named attribute from the
-// // 	// current node.
-// // 	SetAttributeNode(attr Attr)
+// Sets the value of the attribute with the specified name and
+// namespace, from the current node.
+func (el *BasicElement) SetAttributeNS(uri string, name string, value string) {
+	attr := el.ownerDocument.CreateAttributeNS(uri, name)
+	attr.SetValue(value)
+	el.attributes.SetNamedItemNS(attr)
+}
 
-// // 	// Sets the node representation of the attribute with the specified
-// // 	// name and namespace, from the current node.
-// // 	SetAttributeNodeNS(attr Attr)
+// Sets the node representation of the named attribute from the
+// current node.
+func (el *BasicElement) SetAttributeNode(attr Attr) {
+	el.attributes.SetNamedItem(attr)
+}
 
-// // 	// Sets the value of the attribute with the specified name and
-// // 	// namespace, from the current node.
-// // 	SetAttributeNS(uri string, name string, value string)
-// // }
+// Sets the node representation of the attribute with the specified
+// name and namespace, from the current node.
+func (el *BasicElement) SetAttributeNodeNS(attr Attr) {
+	el.attributes.SetNamedItemNS(attr)
+}
+
+func (el *BasicElement) InsertBefore(newNode, referenceNode Node) (Node, error) {
+	if err := validatePreInsertion(newNode, el, referenceNode, "InsertBefore"); err != nil {
+		return nil, err
+	}
+	return insertBefore(el, newNode, referenceNode), nil
+}
+
+// Append newNode as a child of node
+func (el *BasicElement) AppendChild(newNode Node) (Node, error) {
+	if err := validatePreInsertion(newNode, el, nil, "AppendChild"); err != nil {
+		return nil, err
+	}
+	return insertBefore(el, newNode, nil), nil
+}

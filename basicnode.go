@@ -3,8 +3,8 @@ package dom
 // basicNode implements the common functionality for DOM nodes
 type basicNode struct {
 	tnode
-	ownerDocument    *BasicDocument
-	defaultNamespace string
+
+	ownerDocument *BasicDocument
 }
 
 // Returns true or false value indicating whether or not a node is a
@@ -117,71 +117,13 @@ func (node *basicNode) GetChildNodes() NodeList {
 	return newBasicNodeList(node)
 }
 
-// Inserts a Node before the reference node as a child of a
-// specified parent node. Returns the added child (unless newNode is
-// a DocumentFragment, in which case the empty DocumentFragment is
-// returned).
-//
-// Algorithm: To ensure pre-insertion validity of a node into a parent
-// before a child, run these steps:
-//
-// If parent is not a Document, DocumentFragment, or Element node,
-// then throw a "HierarchyRequestError" DOMException.
-//
-// If node is a host-including inclusive ancestor of parent, then
-// throw a "HierarchyRequestError" DOMException.
-//
-// If child is non-null and its parent is not parent, then throw a
-// "NotFoundError" DOMException.
-//
-// If node is not a DocumentFragment, DocumentType, Element, or
-// CharacterData node, then throw a "HierarchyRequestError"
-// DOMException.
-//
-// If either node is a Text node and parent is a document, or node is
-// a doctype and parent is not a document, then throw a
-// "HierarchyRequestError" DOMException.
-//
-// If parent is a document, and any of the statements below, switched
-// on the interface node implements, are true, then throw a
-// "HierarchyRequestError" DOMException.
-//
-// DocumentFragment: If node has more than one element child or has a
-// Text node child. Otherwise, if node has one element child and
-// either parent has an element child, child is a doctype, or child is
-// non-null and a doctype is following child.
-//
-// Element: parent has an element child, child is a doctype, or child
-// is non-null and a doctype is following child.
-//
-// DocumentType: parent has a doctype child, child is non-null and an
-// element is preceding child, or child is null and parent has an
-// element child.
-//
-// To pre-insert a node into a parent before a child, run these steps:
-
-// Ensure pre-insertion validity of node into parent before child.
-
-// Let referenceChild be child.
-
-// If referenceChild is node, then set referenceChild to node’s next sibling.
-
-// Insert newNode into node before referenceChild.
-
-// Return node.
 func (node *basicNode) InsertBefore(newNode, referenceNode Node) (Node, error) {
-	if err := validatePreInsertion(newNode, node, referenceNode, "InsertBefore"); err != nil {
-		return nil, err
-	}
-	return insertBefore(node, newNode, referenceNode), nil
+	panic("basicNode.InsertBefore should not have been called")
 }
 
 // Append newNode as a child of node
 func (node *basicNode) AppendChild(newNode Node) (Node, error) {
-	if err := validatePreInsertion(newNode, node, nil, "AppendChild"); err != nil {
-		return nil, err
-	}
-	return insertBefore(node, newNode, nil), nil
+	panic("basicNode.AppendChild should not have been called")
 }
 
 // Remove child from node
@@ -261,11 +203,11 @@ func validatePreInsertion(node, parent, beforeChild Node, op string) error {
 	if parentType != DOCUMENT_NODE && parentType != DOCUMENT_FRAGMENT_NODE && parentType != ELEMENT_NODE {
 		return ErrHierarchyRequest(op, "Parent is not a DOCUMENT, DOCUMENT_FRAGMENT, or ELEMENT")
 	}
-	if nodeType != DOCUMENT_FRAGMENT_NODE ||
-		nodeType != DOCUMENT_TYPE_NODE ||
-		nodeType != ELEMENT_NODE ||
-		nodeType != CDATA_SECTION_NODE ||
-		nodeType != TEXT_NODE ||
+	if nodeType != DOCUMENT_FRAGMENT_NODE &&
+		nodeType != DOCUMENT_TYPE_NODE &&
+		nodeType != ELEMENT_NODE &&
+		nodeType != CDATA_SECTION_NODE &&
+		nodeType != TEXT_NODE &&
 		nodeType != COMMENT_NODE {
 		return ErrHierarchyRequest(op, "Invalid node type")
 	}

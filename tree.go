@@ -91,8 +91,12 @@ func detachChild(parent, child Node) {
 			parenttn.child = childtn.next
 		}
 	}
-	childtn.next.treeNode().prev = childtn.prev
-	childtn.prev.treeNode().next = childtn.next
+	if childtn.next != nil {
+		childtn.next.treeNode().prev = childtn.prev
+	}
+	if childtn.prev != nil {
+		childtn.prev.treeNode().next = childtn.next
+	}
 	childtn.next = nil
 	childtn.prev = nil
 }

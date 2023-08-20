@@ -78,6 +78,54 @@ type Node interface {
 	// specified parent node. Returns the added child (unless newNode is
 	// a DocumentFragment, in which case the empty DocumentFragment is
 	// returned).
+	//
+	// Algorithm: To ensure pre-insertion validity of a node into a parent
+	// before a child, run these steps:
+	//
+	// If parent is not a Document, DocumentFragment, or Element node,
+	// then throw a "HierarchyRequestError" DOMException.
+	//
+	// If node is a host-including inclusive ancestor of parent, then
+	// throw a "HierarchyRequestError" DOMException.
+	//
+	// If child is non-null and its parent is not parent, then throw a
+	// "NotFoundError" DOMException.
+	//
+	// If node is not a DocumentFragment, DocumentType, Element, or
+	// CharacterData node, then throw a "HierarchyRequestError"
+	// DOMException.
+	//
+	// If either node is a Text node and parent is a document, or node is
+	// a doctype and parent is not a document, then throw a
+	// "HierarchyRequestError" DOMException.
+	//
+	// If parent is a document, and any of the statements below, switched
+	// on the interface node implements, are true, then throw a
+	// "HierarchyRequestError" DOMException.
+	//
+	// DocumentFragment: If node has more than one element child or has a
+	// Text node child. Otherwise, if node has one element child and
+	// either parent has an element child, child is a doctype, or child is
+	// non-null and a doctype is following child.
+	//
+	// Element: parent has an element child, child is a doctype, or child
+	// is non-null and a doctype is following child.
+	//
+	// DocumentType: parent has a doctype child, child is non-null and an
+	// element is preceding child, or child is null and parent has an
+	// element child.
+	//
+	// To pre-insert a node into a parent before a child, run these steps:
+
+	// Ensure pre-insertion validity of node into parent before child.
+
+	// Let referenceChild be child.
+
+	// If referenceChild is node, then set referenceChild to node’s next sibling.
+
+	// Insert newNode into node before referenceChild.
+
+	// Return node.
 	InsertBefore(newNode, referenceNode Node) (Node, error)
 
 	// Removes a child node from the current element, which must be a

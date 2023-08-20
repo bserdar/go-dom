@@ -13,7 +13,7 @@ var _ Attr = &BasicAttr{}
 // A String representing the local part of the qualified name of the
 // attribute.
 func (attr *BasicAttr) GetLocalName() string {
-	return attr.name.local
+	return attr.name.Local
 }
 
 // Returns the qualified name of an attribute, that is the name of
@@ -45,8 +45,7 @@ func (attr *BasicAttr) SetValue(v string) {
 func (attr *BasicAttr) CloneNode(bool) Node {
 	ret := BasicAttr{
 		basicNode: basicNode{
-			ownerDocument:    attr.ownerDocument,
-			defaultNamespace: attr.defaultNamespace,
+			ownerDocument: attr.ownerDocument,
 		},
 		name:  attr.name,
 		value: attr.value,

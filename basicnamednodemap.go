@@ -1,10 +1,13 @@
 package dom
 
+import (
+	"encoding/xml"
+)
+
 type BasicNamedNodeMap struct {
-	owner *BasicElement
-	attrs []Attr
-	// Map of qname -> Attr
-	mapAttrs map[string]Attr
+	owner    *BasicElement
+	attrs    []Attr
+	mapAttrs map[xml.Name]Attr
 }
 
 var _ NamedNodeMap = &BasicNamedNodeMap{}
@@ -15,16 +18,18 @@ func (m *BasicNamedNodeMap) GetLength() int {
 
 // Returns a Attr, corresponding to the given name.
 func (m *BasicNamedNodeMap) GetNamedItem(name string) Attr {
-	return m.mapAttrs[name]
+	if m.mapAttrs == nil {
+		return nil
+	}
+	return m.mapAttrs[xml.Name{Local: name}]
 }
 
 // Returns a Attr identified by a namespace and related local name.
 func (m *BasicNamedNodeMap) GetNamedItemNS(uri string, name string) Attr {
-	qname := Name{
-		ns:    uri,
-		local: name,
+	if m.mapAttrs == nil {
+		return nil
 	}
-	return m.mapAttrs[qname.QName()]
+	return m.mapAttrs[xml.Name{Local: name, Space: uri}]
 }
 
 // Returns the Attr at the given index, or null if the index is higher or equal to the number of nodes
@@ -37,22 +42,15 @@ func (m *BasicNamedNodeMap) Item(index int) Attr {
 
 // Removes the Attr identified by the given name
 func (m *BasicNamedNodeMap) RemoveNamedItem(name string) {
-	attr, exists := m.mapAttrs[name]
-	if !exists {
-		return
-	}
-	ba := attr.(*BasicAttr)
-	m.RemoveNamedItemNS(ba.name.ns, ba.name.local)
+	m.RemoveNamedItemNS("", name)
 }
 
 // RemoveNamedItemNS removes the Attr identified by the given name
 func (m *BasicNamedNodeMap) RemoveNamedItemNS(uri string, name string) {
-	nm := Name{
-		ns:    uri,
-		local: name,
+	if m.mapAttrs == nil {
+		return
 	}
-	qname := nm.QName()
-	attr, exists := m.mapAttrs[qname]
+	attr, exists := m.mapAttrs[xml.Name{Local: name, Space: uri}]
 	if !exists {
 		return
 	}
@@ -60,7 +58,7 @@ func (m *BasicNamedNodeMap) RemoveNamedItemNS(uri string, name string) {
 }
 
 func (m *BasicNamedNodeMap) removeAttr(attr Attr) {
-	qname := attr.(*BasicAttr).name.QName()
+	qname := attr.(*BasicAttr).name.Name
 	delete(m.mapAttrs, qname)
 	w := 0
 	for k := range m.attrs {
@@ -86,8 +84,11 @@ func (m *BasicNamedNodeMap) SetNamedItemNS(attr Attr) {
 			Op:  "SetNamedItem",
 		})
 	}
+	if m.mapAttrs == nil {
+		m.mapAttrs = make(map[xml.Name]Attr)
+	}
 	ba := attr.(*BasicAttr)
-	qname := ba.name.QName()
+	qname := ba.name.Name
 	existing := m.mapAttrs[qname]
 	if existing != nil {
 		if existing == attr {
