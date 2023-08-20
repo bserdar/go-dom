@@ -12,8 +12,8 @@ type Document interface {
 	// Creates a new attribute node in a given namespace and returns it.
 	CreateAttributeNS(ns string, name string) Attr
 
-	// // Creates a new CDATA node and returns it.
-	// CreateCDATASection(string) CDATASection
+	// Creates a new CDATA node and returns it.
+	CreateCDATASection(string) CDATASection
 
 	// // Creates a new comment node and returns it.
 	// CreateComment(string) Comment
@@ -27,14 +27,14 @@ type Document interface {
 	// Creates a new element with the given tag name and namespace URI.
 	CreateElementNS(ns string, tag string) Element
 
+	// Creates a text node.
+	CreateTextNode(string) Text
+
 	// // Creates a NodeIterator object.
 	// CreateNodeIterator(Node, WhatToShow, func(Node) bool) NodeIterator
 
 	// //Creates a new ProcessingInstruction object.
 	// CreateProcessingInstruction(target, data string) ProcessingInstruction
-
-	// // Creates a text node.
-	// CreateTextNode(string) Text
 
 	// // Returns an object reference to the identified element.
 	// GetElementById(string) Element

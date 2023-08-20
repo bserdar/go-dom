@@ -86,6 +86,30 @@ func (doc *BasicDocument) CreateElementNS(ns string, tag string) Element {
 	}
 }
 
+// Creates a new CDATA node and returns it.
+func (doc *BasicDocument) CreateCDATASection(text string) CDATASection {
+	return &BasicCDataSection{
+		basicChardata: basicChardata{
+			basicNode: basicNode{
+				ownerDocument: doc,
+			},
+			text: text,
+		},
+	}
+}
+
+// Creates a text node.
+func (doc *BasicDocument) CreateTextNode(text string) Text {
+	return &BasicText{
+		basicChardata: basicChardata{
+			basicNode: basicNode{
+				ownerDocument: doc,
+			},
+			text: text,
+		},
+	}
+}
+
 // // Clone a Node, and optionally, all of its contents.
 // //
 // // Returns the new Node cloned. The cloned node has no parent and is not
@@ -242,4 +266,17 @@ func (doc *BasicDocument) AppendChild(newNode Node) (Node, error) {
 		return nil, err
 	}
 	return insertBefore(doc, newNode, nil), nil
+}
+
+// Remove child from node
+func (doc *BasicDocument) RemoveChild(child Node) error {
+	if child.GetParentNode() != doc {
+		return ErrDOM{
+			Typ: NOT_FOUND_ERR,
+			Msg: "Wrong parent",
+			Op:  "RemoveChild",
+		}
+	}
+	detachChild(doc, child)
+	return nil
 }

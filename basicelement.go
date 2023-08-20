@@ -218,3 +218,16 @@ func (el *BasicElement) AppendChild(newNode Node) (Node, error) {
 	}
 	return insertBefore(el, newNode, nil), nil
 }
+
+// Remove child from node
+func (el *BasicElement) RemoveChild(child Node) error {
+	if child.GetParentNode() != el {
+		return ErrDOM{
+			Typ: NOT_FOUND_ERR,
+			Msg: "Wrong parent",
+			Op:  "RemoveChild",
+		}
+	}
+	detachChild(el, child)
+	return nil
+}

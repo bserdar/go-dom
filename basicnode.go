@@ -128,15 +128,7 @@ func (node *basicNode) AppendChild(newNode Node) (Node, error) {
 
 // Remove child from node
 func (node *basicNode) RemoveChild(child Node) error {
-	if child.GetParentNode() != node {
-		return ErrDOM{
-			Typ: NOT_FOUND_ERR,
-			Msg: "Wrong parent",
-			Op:  "RemoveChild",
-		}
-	}
-	detachChild(node, child)
-	return nil
+	panic("BasicNode.RemoveChild should not have been called")
 }
 
 // Inserts a Node before the reference node as a child of a
