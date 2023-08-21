@@ -8,6 +8,9 @@ type Element interface {
 	// Returns a String with the name of the tag for the given element.
 	GetTagName() string
 
+	// GetQName returns the qualified name
+	GetQName() Name
+
 	// Returns a string representing the namespace prefix of the element,
 	// or "" if no prefix is specified.
 	GetPrefix() string

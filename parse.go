@@ -106,7 +106,7 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 			newElement.defaultNamespace = defaultNamespace
 			newElement.name = name
 			for _, attr := range token.Attr {
-				name := makeName(attr.Name, dict, defaultNamespace)
+				name := makeName(attr.Name, dict, "")
 				var newAttr *BasicAttr
 				if len(name.Space) > 0 {
 					newAttr = ret.CreateAttributeNS(name.Space, name.Local).(*BasicAttr)

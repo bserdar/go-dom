@@ -22,6 +22,10 @@ func (el *BasicElement) getQName() string {
 	return el.name.QName()
 }
 
+func (el *BasicElement) GetQName() Name {
+	return el.name
+}
+
 // Returns a String with the name of the tag for the given element.
 func (el *BasicElement) GetTagName() string {
 	return el.name.QName()

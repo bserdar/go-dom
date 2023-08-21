@@ -13,6 +13,8 @@ type Attr interface {
 	// prefix is xml, the returned qualified name is xml:lang.
 	GetName() string
 
+	GetQName() Name
+
 	// The Element the attribute belongs to.
 	GetOwnerElement() Element
 

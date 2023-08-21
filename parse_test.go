@@ -90,23 +90,78 @@ xmlns:f="https://test.com/furniture">
 
 <h:table>
   <h:tr>
-    <h:td>Apples</h:td>
+    <h:td attr="value">Apples</h:td>
     <h:td>Bananas</h:td>
   </h:tr>
 </h:table>
 
 <f:table>
   <f:name>African Coffee Table</f:name>
-  <f:width>80</f:width>
-  <f:length>120</f:length>
 </f:table>
 
 </root>`
+
+	const hSpace = "http://www.w3.org/TR/html4/"
+	const fSpace = "https://test.com/furniture"
+
 	dec := xml.NewDecoder(strings.NewReader(input))
 	doc, err := Parse(dec)
 	if err != nil {
 		t.Errorf(err.Error())
 		return
 	}
-	t.Log(doc)
+	root := doc.GetDocumentElement()
+	name := root.(Element).GetQName()
+	if name.Local != "root" ||
+		name.Space != "" ||
+		name.Prefix != "" {
+		t.Errorf("Bad root name %v", name)
+	}
+
+	el := root.GetFirstChild().GetNextSibling().(Element)
+	name = el.GetQName()
+	if name.Local != "table" || name.Space != hSpace || name.Prefix != "h" {
+		t.Errorf("Bad table: %v", name)
+	}
+
+	el = el.GetFirstChild().GetNextSibling().(Element)
+	name = el.GetQName()
+	if name.Local != "tr" || name.Space != hSpace || name.Prefix != "h" {
+		t.Errorf("Bad tr: %v", name)
+	}
+	el = el.GetFirstChild().GetNextSibling().(Element)
+	name = el.GetQName()
+	if name.Local != "td" || name.Space != hSpace || name.Prefix != "h" {
+		t.Errorf("Bad td: %v", name)
+	}
+
+	if v, ok := el.GetAttributeNS("", "attr"); v != "value" || !ok {
+		t.Errorf("Wrong attr: %v", el.(*BasicElement).attributes)
+	}
+
+	txt := el.GetFirstChild().(Text)
+	if txt.GetValue() != "Apples" {
+		t.Errorf("Wrong text: %v", txt)
+	}
+
+	el = el.GetNextSibling().GetNextSibling().(Element)
+	name = el.GetQName()
+	if name.Local != "td" || name.Space != hSpace || name.Prefix != "h" {
+		t.Errorf("Bad td: %v", name)
+	}
+	txt = el.GetFirstChild().(Text)
+	if txt.GetValue() != "Bananas" {
+		t.Errorf("Wrong text: %v", txt)
+	}
+
+	el = el.GetParentElement().GetParentElement().GetNextSibling().GetNextSibling().(Element)
+	name = el.GetQName()
+	if name.Local != "table" || name.Space != fSpace || name.Prefix != "f" {
+		t.Errorf("Bad table: %v", name)
+	}
+	el = el.GetFirstChild().GetNextSibling().(Element)
+	name = el.GetQName()
+	if name.Local != "name" || name.Space != fSpace || name.Prefix != "f" {
+		t.Errorf("Bad name: %v", name)
+	}
 }

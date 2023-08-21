@@ -24,6 +24,10 @@ func (attr *BasicAttr) GetName() string {
 	return attr.name.QName()
 }
 
+func (attr *BasicAttr) GetQName() Name {
+	return attr.name
+}
+
 // The Element the attribute belongs to.
 func (attr *BasicAttr) GetOwnerElement() Element {
 	if el, ok := attr.parent.(Element); ok {
