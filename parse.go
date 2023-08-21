@@ -180,7 +180,7 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 			var newNode Node
 			content := string(token)
 			if strings.HasPrefix(content, "CDATA[") && strings.HasSuffix(content, "]]") {
-				newNode = ret.CreateCDATASection(content)
+				newNode = ret.CreateCDATASection(string(content[6 : len(content)-2]))
 			}
 			elementStack[len(elementStack)-1].el.AppendChild(newNode)
 		}
