@@ -30,6 +30,10 @@ type BasicCDataSection struct {
 
 var _ CDATASection = &BasicCDataSection{}
 
+// Returns a boolean value indicating whether or not the two nodes are
+// the same (that is, they reference the same object).
+func (cd *BasicCDataSection) IsSameNode(node Node) bool { return node == cd }
+
 // Returns "#cdata-section"
 func (cd *BasicCDataSection) GetNodeName() string { return "#cdata-section" }
 
@@ -63,3 +67,7 @@ func (cd *BasicText) IsEqualNode(node Node) bool {
 	}
 	return n.text == cd.text
 }
+
+// Returns a boolean value indicating whether or not the two nodes are
+// the same (that is, they reference the same object).
+func (cd *BasicText) IsSameNode(node Node) bool { return node == cd }

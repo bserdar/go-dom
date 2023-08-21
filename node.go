@@ -156,9 +156,9 @@ type Node interface {
 	// are of the same type and all their defining data points match.
 	IsEqualNode(Node) bool
 
-	// // Returns a boolean value indicating whether or not the two nodes are
-	// // the same (that is, they reference the same object).
-	// IsSameNode(Node) bool
+	// Returns a boolean value indicating whether or not the two nodes are
+	// the same (that is, they reference the same object).
+	IsSameNode(Node) bool
 
 	// // Returns a string  containing the prefix for a given namespace
 	// // URI, if present, and "" if not. When multiple prefixes are

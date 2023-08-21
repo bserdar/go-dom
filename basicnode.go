@@ -117,6 +117,10 @@ func (node *basicNode) GetChildNodes() NodeList {
 	return newBasicNodeList(node)
 }
 
+func (node *basicNode) IsSameNode(Node) bool {
+	panic(ErrHierarchyRequest("IsSameNode", "Wrong node type"))
+}
+
 func (node *basicNode) InsertBefore(newNode, referenceNode Node) Node {
 	panic(ErrHierarchyRequest("InsertBefore", "Wrong node type"))
 }

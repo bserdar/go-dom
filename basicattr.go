@@ -10,6 +10,10 @@ type BasicAttr struct {
 
 var _ Attr = &BasicAttr{}
 
+// Returns a boolean value indicating whether or not the two nodes are
+// the same (that is, they reference the same object).
+func (attr *BasicAttr) IsSameNode(node Node) bool { return node == attr }
+
 // A String representing the local part of the qualified name of the
 // attribute.
 func (attr *BasicAttr) GetLocalName() string {

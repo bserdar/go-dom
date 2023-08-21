@@ -28,6 +28,10 @@ func (doc *BasicDocument) GetNodeName() string { return "#document" }
 // Returns DOCUMENT_NODE
 func (doc *BasicDocument) GetNodeType() NodeType { return DOCUMENT_NODE }
 
+// Returns a boolean value indicating whether or not the two nodes are
+// the same (that is, they reference the same object).
+func (doc *BasicDocument) IsSameNode(node Node) bool { return node == doc }
+
 // Creates a new Attr object and returns it.
 func (doc *BasicDocument) CreateAttribute(name string) Attr {
 	return &BasicAttr{

@@ -12,6 +12,10 @@ var _ Element = &BasicElement{}
 
 func (el *BasicElement) getDefaultNamespace() string { return el.defaultNamespace }
 
+// Returns a boolean value indicating whether or not the two nodes are
+// the same (that is, they reference the same object).
+func (el *BasicElement) IsSameNode(node Node) bool { return node == el }
+
 // Returns HTML uppercased qualified name
 func (el *BasicElement) GetNodeName() string { return el.getQName() }
 
@@ -233,4 +237,32 @@ func (el *BasicElement) RemoveChild(child Node) {
 		})
 	}
 	detachChild(el, child)
+}
+
+func (el *BasicElement) Normalize() {
+	// Combine all text nodes
+	for childNode := el.GetFirstChild(); childNode != nil; {
+		childNode.Normalize()
+		text, ok := childNode.(*BasicText)
+		if !ok {
+			childNode = childNode.GetNextSibling()
+			continue
+		}
+		// This is a text node. Combine with the next text node
+		nextNode := text.GetNextSibling()
+		for {
+			if nextNode == nil {
+				childNode = nil
+				break
+			}
+			nextText, ok := nextNode.(*BasicText)
+			if !ok {
+				childNode = nextNode
+				break
+			}
+			text.text += nextText.text
+			nextNode = nextText.GetNextSibling()
+			detachChild(el, nextText)
+		}
+	}
 }
