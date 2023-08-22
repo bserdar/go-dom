@@ -115,6 +115,31 @@ func (doc *BasicDocument) CreateTextNode(text string) Text {
 	}
 }
 
+// Creates a comment node.
+func (doc *BasicDocument) CreateComment(text string) Comment {
+	return &BasicComment{
+		basicChardata: basicChardata{
+			basicNode: basicNode{
+				ownerDocument: doc,
+			},
+			text: text,
+		},
+	}
+}
+
+// Creates a processing instruction node.
+func (doc *BasicDocument) CreateProcessingInstruction(target, data string) ProcessingInstruction {
+	return &BasicProcessingInstruction{
+		basicChardata: basicChardata{
+			basicNode: basicNode{
+				ownerDocument: doc,
+			},
+			text: data,
+		},
+		target: target,
+	}
+}
+
 // // Clone a Node, and optionally, all of its contents.
 // //
 // // Returns the new Node cloned. The cloned node has no parent and is not
@@ -230,11 +255,13 @@ func (doc *BasicDocument) Normalize() {
 
 // Returns the Element that is a direct child of the document.
 func (doc *BasicDocument) GetDocumentElement() Element {
-	first := doc.GetFirstChild()
-	if first == nil {
-		return nil
+	for child := doc.GetFirstChild(); child != nil; child = child.GetNextSibling() {
+		el, ok := child.(Element)
+		if ok {
+			return el
+		}
 	}
-	return first.(Element)
+	return nil
 }
 
 func (doc *BasicDocument) InsertBefore(newNode, referenceNode Node) Node {
@@ -276,13 +303,13 @@ func (doc *BasicDocument) AdoptNode(node Node) Node {
 	type setOwnerSupport interface {
 		setOwner(*BasicDocument)
 	}
-	var setParent func(Node)
-	setParent = func(nd Node) {
+	var setOwner func(Node)
+	setOwner = func(nd Node) {
 		nd.(setOwnerSupport).setOwner(doc)
 		for ch := nd.GetFirstChild(); ch != nil; ch = ch.GetNextSibling() {
-			setParent(ch)
+			setOwner(ch)
 		}
 	}
-	setParent(node)
+	setOwner(node)
 	return node
 }

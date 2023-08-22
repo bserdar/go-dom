@@ -75,7 +75,7 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 
 			defaultNamespace := ""
 			dict := newNsMap()
-			if len(elementStack) > 0 {
+			if len(elementStack) > 1 {
 				defaultNamespace = elementStack[len(elementStack)-1].el.getDefaultNamespace()
 				dict.parent = elementStack[len(elementStack)-1].dict
 			} else {
@@ -161,17 +161,13 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 			}
 
 		case xml.Comment:
-			if len(elementStack) == 1 {
-				return nil, &xml.SyntaxError{
-					Msg: "Comment before document",
-				}
-			}
+			newNode := ret.CreateComment(string(token))
+			elementStack[len(elementStack)-1].el.AppendChild(newNode)
+
 		case xml.ProcInst:
-			if len(elementStack) == 1 {
-				return nil, &xml.SyntaxError{
-					Msg: "Processing instruction before document",
-				}
-			}
+			newNode := ret.CreateProcessingInstruction(token.Target, string(token.Inst))
+			elementStack[len(elementStack)-1].el.AppendChild(newNode)
+
 		case xml.Directive:
 			if len(elementStack) == 1 {
 				return nil, &xml.SyntaxError{

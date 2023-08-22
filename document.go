@@ -15,8 +15,8 @@ type Document interface {
 	// Creates a new CDATA node and returns it.
 	CreateCDATASection(string) CDATASection
 
-	// // Creates a new comment node and returns it.
-	// CreateComment(string) Comment
+	// Creates a new comment node and returns it.
+	CreateComment(string) Comment
 
 	// // Creates a new document fragment.
 	// CreateDocumentFragment() DocumentFragment
@@ -33,8 +33,8 @@ type Document interface {
 	// // Creates a NodeIterator object.
 	// CreateNodeIterator(Node, WhatToShow, func(Node) bool) NodeIterator
 
-	// //Creates a new ProcessingInstruction object.
-	// CreateProcessingInstruction(target, data string) ProcessingInstruction
+	//Creates a new ProcessingInstruction object.
+	CreateProcessingInstruction(target, data string) ProcessingInstruction
 
 	// // Returns an object reference to the identified element.
 	// GetElementById(string) Element
