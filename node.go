@@ -140,17 +140,17 @@ type Node interface {
 	// // method.
 	// CloneNode(deep bool) Node
 
-	// // Returns true or false value indicating whether or not a node is a
-	// // descendant of the calling node.
-	// Contains(Node) bool
+	// Returns true or false value indicating whether or not a node is a
+	// descendant of the calling node.
+	Contains(Node) bool
 
 	// Returns the object's root
 	GetRootNode() Node
 
-	// // Accepts a namespace URI as an argument and returns a boolean value
-	// // with a value of true if the namespace is the default namespace on
-	// // the given node or false if not.
-	// IsDefaultNamespace(uri string) bool
+	// Accepts a namespace URI as an argument and returns a boolean value
+	// with a value of true if the namespace is the default namespace on
+	// the given node or false if not.
+	IsDefaultNamespace(uri string) bool
 
 	// Returns a boolean value which indicates whether or not two nodes
 	// are of the same type and all their defining data points match.

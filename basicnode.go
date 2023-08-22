@@ -7,6 +7,10 @@ type basicNode struct {
 	ownerDocument *BasicDocument
 }
 
+func (node *basicNode) setOwner(doc *BasicDocument) {
+	node.ownerDocument = doc
+}
+
 // Returns true or false value indicating whether or not a node is a
 // descendant of the calling node.
 func contains(parent, childNode Node) bool {
@@ -54,6 +58,16 @@ func (node *basicNode) IsEqualNode(Node) bool {
 // any child nodes.
 func (node *basicNode) HasChildNodes() bool {
 	return node.child != nil
+}
+
+// Accepts a namespace URI as an argument and returns a boolean value
+// with a value of true if the namespace is the default namespace on
+// the given node or false if not.
+func (node *basicNode) IsDefaultNamespace(uri string) bool {
+	if node.parent == nil {
+		return false
+	}
+	return node.parent.IsDefaultNamespace(uri)
 }
 
 // Clean up all the text nodes under this element (merge adjacent,
@@ -157,6 +171,20 @@ func (node *basicNode) LookupNamespaceURI(prefix string) string {
 		return ""
 	}
 	return node.parent.LookupNamespaceURI(prefix)
+}
+
+// Returns true or false value indicating whether or not a node is a
+// descendant of the calling node.
+func (node *basicNode) Contains(nd Node) bool {
+	if nd == node {
+		return true
+	}
+	for ch := node.GetFirstChild(); ch != nil; ch = ch.GetNextSibling() {
+		if ch.Contains(nd) {
+			return true
+		}
+	}
+	return false
 }
 
 // Inserts a Node before the reference node as a child of a

@@ -42,6 +42,6 @@ type Document interface {
 	// // Replaces entities, normalizes text nodes, etc.
 	// NormalizeDocument()
 
-	// //	Adopt node from an external document.
-	// AdoptNode(Node) Node
+	//	Adopt node from an external document.
+	AdoptNode(Node) Node
 }

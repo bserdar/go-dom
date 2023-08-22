@@ -138,27 +138,12 @@ func (doc *BasicDocument) CreateTextNode(text string) Text {
 // 	return ret
 // }
 
-// // Returns true or false value indicating whether or not a node is a
-// // descendant of the calling node.
-// func (doc *BasicDocument) Contains(node Node) bool {
-// 	return contains(doc, node)
-// }
-
-// // Returns the object's root
-// func (doc *BasicDocument) GetRootNode() Node {
-// 	return doc
-// }
-
-// // Accepts a namespace URI as an argument and returns a boolean value
-// // with a value of true if the namespace is the default namespace on
-// // the given node or false if not.
-// func (doc *BasicDocument) IsDefaultNamespace(uri string) bool {
-// 	el := doc.GetDocumentElement()
-// 	if el == nil {
-// 		return false
-// 	}
-// 	return el.IsDefaultNamespace(uri)
-// }
+// Accepts a namespace URI as an argument and returns a boolean value
+// with a value of true if the namespace is the default namespace on
+// the given node or false if not.
+func (doc *BasicDocument) IsDefaultNamespace(uri string) bool {
+	return uri == doc.defaultNamespace
+}
 
 // Returns a boolean value which indicates whether or not two nodes
 // are of the same type and all their defining data points match.
@@ -274,4 +259,30 @@ func (doc *BasicDocument) RemoveChild(child Node) {
 		})
 	}
 	detachChild(doc, child)
+}
+
+// Adopt node from an external document.
+func (doc *BasicDocument) AdoptNode(node Node) Node {
+	if _, ok := node.(Document); ok {
+		panic(ErrDOM{
+			Typ: NOT_SUPPORTED_ERR,
+			Msg: "Cannot adopt a document",
+			Op:  "AdoptNode",
+		})
+	}
+	if node.GetParentNode() != nil {
+		detachChild(node.GetParentNode(), node)
+	}
+	type setOwnerSupport interface {
+		setOwner(*BasicDocument)
+	}
+	var setParent func(Node)
+	setParent = func(nd Node) {
+		nd.(setOwnerSupport).setOwner(doc)
+		for ch := nd.GetFirstChild(); ch != nil; ch = ch.GetNextSibling() {
+			setParent(ch)
+		}
+	}
+	setParent(node)
+	return node
 }

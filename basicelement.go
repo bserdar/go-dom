@@ -48,6 +48,13 @@ func (el *BasicElement) GetLocalName() string {
 	return el.name.Local
 }
 
+// Accepts a namespace URI as an argument and returns a boolean value
+// with a value of true if the namespace is the default namespace on
+// the given node or false if not.
+func (el *BasicElement) IsDefaultNamespace(uri string) bool {
+	return uri == el.defaultNamespace
+}
+
 // // The namespace URI of the element, or "" if it is no namespace.}
 // func (el *BasicElement) GetNamespaceURI() string {
 // 	return el.space
