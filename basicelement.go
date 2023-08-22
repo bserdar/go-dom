@@ -2,6 +2,7 @@ package dom
 
 type BasicElement struct {
 	basicNode
+	dictionary
 
 	attributes       BasicNamedNodeMap
 	name             Name
@@ -66,6 +67,25 @@ func (el *BasicElement) GetNextElementSibling() Element {
 
 func (el *BasicElement) GetPreviousElementSibling() Element {
 	return prevElementSibling(el.GetPreviousSibling())
+}
+
+// Returns a string  containing the prefix for a given namespace
+// URI, if present, and "" if not. When multiple prefixes are
+// possible, the result is implementation-dependent.
+func (el *BasicElement) LookupPrefix(uri string) string {
+	s, _ := el.getPrefix(uri)
+	return s
+}
+
+// Accepts a prefix and returns the namespace URI associated with it
+// on the given node if found (and "" if not). Supplying "" for
+// the prefix will return the default namespace.
+func (el *BasicElement) LookupNamespaceURI(prefix string) string {
+	if prefix == "" {
+		return el.defaultNamespace
+	}
+	s, _ := el.getNS(prefix)
+	return s
 }
 
 func nextElementSibling(start Node) Element {

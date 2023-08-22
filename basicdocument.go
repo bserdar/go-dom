@@ -9,6 +9,7 @@ import (
 // Implementation is guided by https://dom.spec.whatwg.org/
 type BasicDocument struct {
 	basicNode
+
 	encoding         string
 	contentType      string
 	url              string
@@ -178,33 +179,32 @@ func (doc *BasicDocument) IsEqualNode(node Node) bool {
 	return isEqualNode(doc, node)
 }
 
-// // Returns a boolean value indicating whether or not the two nodes are
-// // the same (that is, they reference the same object).
-// func (doc *BasicDocument) IsSameNode(node Node) bool {
-// 	return node == doc
-// }
+// Returns a string  containing the prefix for a given namespace
+// URI, if present, and "" if not. When multiple prefixes are
+// possible, the result is implementation-dependent.
+func (doc *BasicDocument) LookupPrefix(uri string) string {
+	el, _ := doc.GetDocumentElement().(*BasicElement)
+	if el == nil {
+		return ""
+	}
+	s, _ := el.getPrefix(uri)
+	return s
+}
 
-// // Returns a string  containing the prefix for a given namespace
-// // URI, if present, and "" if not. When multiple prefixes are
-// // possible, the result is implementation-dependent.
-// func (doc *BasicDocument) LookupPrefix(prefix string) string {
-// 	el := doc.GetDocumentElement()
-// 	if el == nil {
-// 		return ""
-// 	}
-// 	return el.LookupPrefix(prefix)
-// }
-
-// // Accepts a prefix and returns the namespace URI associated with it
-// // on the given node if found (and "" if not). Supplying "" for
-// // the prefix will return the default namespace.
-// func (doc *BasicDocument) LookupNamespaceURI(uri string) string {
-// 	el := doc.GetDocumentElement()
-// 	if el == nil {
-// 		return ""
-// 	}
-// 	return el.LookupNamespaceURI(uri)
-// }
+// Accepts a prefix and returns the namespace URI associated with it
+// on the given node if found (and "" if not). Supplying "" for
+// the prefix will return the default namespace.
+func (doc *BasicDocument) LookupNamespaceURI(prefix string) string {
+	if prefix == "" {
+		return doc.defaultNamespace
+	}
+	el, _ := doc.GetDocumentElement().(*BasicElement)
+	if el == nil {
+		return ""
+	}
+	s, _ := el.getNS(prefix)
+	return s
+}
 
 // Clean up all the text nodes under this element (merge adjacent,
 // remove empty).

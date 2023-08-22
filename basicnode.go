@@ -34,6 +34,10 @@ func getRootNode(node Node) Node {
 
 func (node *basicNode) treeNode() *tnode { return &node.tnode }
 
+func (node *basicNode) GetRootNode() Node {
+	return getRootNode(node)
+}
+
 func (node *basicNode) GetNodeName() string {
 	panic("basicNode.GetNodeName should not have been called")
 }
@@ -133,6 +137,26 @@ func (node *basicNode) AppendChild(newNode Node) Node {
 // Remove child from node
 func (node *basicNode) RemoveChild(child Node) {
 	panic(ErrHierarchyRequest("RemoveChild", "Wrong node type"))
+}
+
+// Returns a string  containing the prefix for a given namespace
+// URI, if present, and "" if not. When multiple prefixes are
+// possible, the result is implementation-dependent.
+func (node *basicNode) LookupPrefix(uri string) string {
+	if node.parent == nil {
+		return ""
+	}
+	return node.parent.LookupPrefix(uri)
+}
+
+// Accepts a prefix and returns the namespace URI associated with it
+// on the given node if found (and "" if not). Supplying "" for
+// the prefix will return the default namespace.
+func (node *basicNode) LookupNamespaceURI(prefix string) string {
+	if node.parent == nil {
+		return ""
+	}
+	return node.parent.LookupNamespaceURI(prefix)
 }
 
 // Inserts a Node before the reference node as a child of a

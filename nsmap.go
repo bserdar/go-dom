@@ -53,3 +53,44 @@ func (m nsMap) add(prefix, uri string) error {
 	m.prefixes[uri] = append(m.prefixes[uri], prefix)
 	return nil
 }
+
+func (m nsMap) dict() dictionary {
+	if len(m.namespaces) == 0 {
+		return dictionary{}
+	}
+	ret := dictionary{
+		namespaces: make(map[string]string, len(m.namespaces)),
+		prefixes:   make(map[string]string, len(m.namespaces)),
+	}
+	for k, v := range m.namespaces {
+		ret.namespaces[k] = v
+		ret.prefixes[v] = k
+	}
+	return ret
+}
+
+type dictionary struct {
+	namespaces map[string]string
+	prefixes   map[string]string
+}
+
+func (d dictionary) getPrefix(uri string) (string, bool) {
+	if len(d.prefixes) == 0 {
+		return "", false
+	}
+	p, ok := d.prefixes[uri]
+	return p, ok
+}
+
+func (d dictionary) getNS(prefix string) (string, bool) {
+	if len(d.namespaces) == 0 {
+		return "", false
+	}
+	p, ok := d.namespaces[prefix]
+	return p, ok
+}
+
+type dictionaryIntf interface {
+	getPrefix(string) (string, bool)
+	getNS(string) (string, bool)
+}

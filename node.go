@@ -144,8 +144,8 @@ type Node interface {
 	// // descendant of the calling node.
 	// Contains(Node) bool
 
-	// // Returns the object's root
-	// GetRootNode() Node
+	// Returns the object's root
+	GetRootNode() Node
 
 	// // Accepts a namespace URI as an argument and returns a boolean value
 	// // with a value of true if the namespace is the default namespace on
@@ -160,15 +160,15 @@ type Node interface {
 	// the same (that is, they reference the same object).
 	IsSameNode(Node) bool
 
-	// // Returns a string  containing the prefix for a given namespace
-	// // URI, if present, and "" if not. When multiple prefixes are
-	// // possible, the result is implementation-dependent.
-	// LookupPrefix(string) string
+	// Returns a string  containing the prefix for a given namespace
+	// URI, if present, and "" if not. When multiple prefixes are
+	// possible, the result is implementation-dependent.
+	LookupPrefix(string) string
 
-	// // Accepts a prefix and returns the namespace URI associated with it
-	// // on the given node if found (and "" if not). Supplying "" for
-	// // the prefix will return the default namespace.
-	// LookupNamespaceURI(string) string
+	// Accepts a prefix and returns the namespace URI associated with it
+	// on the given node if found (and "" if not). Supplying "" for
+	// the prefix will return the default namespace.
+	LookupNamespaceURI(string) string
 
 	// Clean up all the text nodes under this element (merge adjacent,
 	// remove empty).
