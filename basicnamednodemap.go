@@ -4,20 +4,17 @@ import (
 	"encoding/xml"
 )
 
-type BasicNamedNodeMap struct {
-	owner    *BasicElement
+type basicNamedNodeMap struct {
 	attrs    []Attr
 	mapAttrs map[xml.Name]Attr
 }
 
-var _ NamedNodeMap = &BasicNamedNodeMap{}
-
-func (m *BasicNamedNodeMap) GetLength() int {
+func (m *basicNamedNodeMap) GetLength() int {
 	return len(m.attrs)
 }
 
 // Returns a Attr, corresponding to the given name.
-func (m *BasicNamedNodeMap) GetNamedItem(name string) Attr {
+func (m *basicNamedNodeMap) GetNamedItem(name string) Attr {
 	if m.mapAttrs == nil {
 		return nil
 	}
@@ -25,7 +22,7 @@ func (m *BasicNamedNodeMap) GetNamedItem(name string) Attr {
 }
 
 // Returns a Attr identified by a namespace and related local name.
-func (m *BasicNamedNodeMap) GetNamedItemNS(uri string, name string) Attr {
+func (m *basicNamedNodeMap) GetNamedItemNS(uri string, name string) Attr {
 	if m.mapAttrs == nil {
 		return nil
 	}
@@ -33,7 +30,7 @@ func (m *BasicNamedNodeMap) GetNamedItemNS(uri string, name string) Attr {
 }
 
 // Returns the Attr at the given index, or null if the index is higher or equal to the number of nodes
-func (m *BasicNamedNodeMap) Item(index int) Attr {
+func (m *basicNamedNodeMap) Item(index int) Attr {
 	if index < 0 || index >= len(m.attrs) {
 		return nil
 	}
@@ -41,12 +38,12 @@ func (m *BasicNamedNodeMap) Item(index int) Attr {
 }
 
 // Removes the Attr identified by the given name
-func (m *BasicNamedNodeMap) RemoveNamedItem(name string) {
+func (m *basicNamedNodeMap) RemoveNamedItem(name string) {
 	m.RemoveNamedItemNS("", name)
 }
 
 // RemoveNamedItemNS removes the Attr identified by the given name
-func (m *BasicNamedNodeMap) RemoveNamedItemNS(uri string, name string) {
+func (m *basicNamedNodeMap) RemoveNamedItemNS(uri string, name string) {
 	if m.mapAttrs == nil {
 		return
 	}
@@ -57,7 +54,7 @@ func (m *BasicNamedNodeMap) RemoveNamedItemNS(uri string, name string) {
 	m.removeAttr(attr)
 }
 
-func (m *BasicNamedNodeMap) removeAttr(attr Attr) {
+func (m *basicNamedNodeMap) removeAttr(attr Attr) {
 	qname := attr.(*BasicAttr).name.Name
 	delete(m.mapAttrs, qname)
 	w := 0
@@ -71,13 +68,13 @@ func (m *BasicNamedNodeMap) removeAttr(attr Attr) {
 }
 
 // Replaces, or adds, the Attr identified in the map by the given name.
-func (m *BasicNamedNodeMap) SetNamedItem(a Attr) {
-	m.SetNamedItemNS(a)
+func (m *basicNamedNodeMap) setNamedItem(owner Node, a Attr) {
+	m.setNamedItemNS(owner, a)
 }
 
 // Replaces, or adds, the Attr identified in the map by the given namespace and related local name.
-func (m *BasicNamedNodeMap) SetNamedItemNS(attr Attr) {
-	if attr.GetOwnerElement() != nil && attr.GetOwnerElement() != m.owner {
+func (m *basicNamedNodeMap) setNamedItemNS(owner Node, attr Attr) {
+	if attr.GetOwnerElement() != nil && attr.GetOwnerElement() != owner {
 		panic(ErrDOM{
 			Typ: INUSE_ATTRIBUTE_ERR,
 			Msg: "Attribute already in use",
@@ -98,12 +95,54 @@ func (m *BasicNamedNodeMap) SetNamedItemNS(attr Attr) {
 		for k := range m.attrs {
 			if m.attrs[k] == existing {
 				m.attrs[k] = attr
-				ba.parent = m.owner
+				ba.parent = owner
 				return
 			}
 		}
 	}
 	m.mapAttrs[qname] = attr
 	m.attrs = append(m.attrs, attr)
-	ba.parent = m.owner
+	ba.parent = owner
+}
+
+type BasicNamedNodeMap struct {
+	owner *BasicElement
+}
+
+var _ NamedNodeMap = &BasicNamedNodeMap{}
+
+func (b *BasicNamedNodeMap) GetLength() int { return b.owner.attributes.GetLength() }
+
+// Returns a Attr, corresponding to the given name.
+func (b *BasicNamedNodeMap) GetNamedItem(name string) Attr {
+	return b.owner.attributes.GetNamedItem(name)
+}
+
+// Replaces, or adds, the Attr identified in the map by the given name.
+func (b *BasicNamedNodeMap) SetNamedItem(a Attr) {
+	b.owner.attributes.setNamedItem(b.owner, a)
+}
+
+// Removes the Attr identified by the given name
+func (b *BasicNamedNodeMap) RemoveNamedItem(name string) {
+	b.owner.attributes.RemoveNamedItem(name)
+}
+
+// Returns the Attr at the given index, or null if the index is higher or equal to the number of nodes
+func (b *BasicNamedNodeMap) Item(i int) Attr {
+	return b.owner.attributes.Item(i)
+}
+
+// Returns a Attr identified by a namespace and related local name.
+func (b *BasicNamedNodeMap) GetNamedItemNS(uri string, name string) Attr {
+	return b.owner.attributes.GetNamedItemNS(uri, name)
+}
+
+// Replaces, or adds, the Attr identified in the map by the given namespace and related local name.
+func (b *BasicNamedNodeMap) SetNamedItemNS(a Attr) {
+	b.owner.attributes.setNamedItemNS(b.owner, a)
+}
+
+func (b *BasicNamedNodeMap) RemoveNamedItemNS(uri string, name string) {
+	b.owner.attributes.RemoveNamedItemNS(uri, name)
 }

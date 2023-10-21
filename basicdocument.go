@@ -74,7 +74,6 @@ func (doc *BasicDocument) CreateElement(tag string) Element {
 			},
 		},
 	}
-	el.attributes.owner = el
 	return el
 }
 
@@ -91,7 +90,6 @@ func (doc *BasicDocument) CreateElementNS(ns string, tag string) Element {
 			},
 		},
 	}
-	el.attributes.owner = el
 	return el
 }
 

@@ -4,7 +4,7 @@ type BasicElement struct {
 	basicNode
 	dictionary
 
-	attributes       BasicNamedNodeMap
+	attributes       basicNamedNodeMap
 	name             Name
 	defaultNamespace string
 }
@@ -125,7 +125,9 @@ func (el *BasicElement) Remove() {
 }
 
 func (el *BasicElement) GetAttributes() NamedNodeMap {
-	return &el.attributes
+	return &BasicNamedNodeMap{
+		owner: el,
+	}
 }
 
 // // 	GetID() string
@@ -216,7 +218,7 @@ func (el *BasicElement) RemoveAttributeNS(uri string, name string) {
 func (el *BasicElement) SetAttribute(name string, value string) {
 	attr := el.ownerDocument.CreateAttribute(name)
 	attr.SetValue(value)
-	el.attributes.SetNamedItem(attr)
+	el.attributes.setNamedItem(el, attr)
 }
 
 // Sets the value of the attribute with the specified name and
@@ -224,19 +226,19 @@ func (el *BasicElement) SetAttribute(name string, value string) {
 func (el *BasicElement) SetAttributeNS(uri string, name string, value string) {
 	attr := el.ownerDocument.CreateAttributeNS(uri, name)
 	attr.SetValue(value)
-	el.attributes.SetNamedItemNS(attr)
+	el.attributes.setNamedItemNS(el, attr)
 }
 
 // Sets the node representation of the named attribute from the
 // current node.
 func (el *BasicElement) SetAttributeNode(attr Attr) {
-	el.attributes.SetNamedItem(attr)
+	el.attributes.setNamedItem(el, attr)
 }
 
 // Sets the node representation of the attribute with the specified
 // name and namespace, from the current node.
 func (el *BasicElement) SetAttributeNodeNS(attr Attr) {
-	el.attributes.SetNamedItemNS(attr)
+	el.attributes.setNamedItemNS(el, attr)
 }
 
 func (el *BasicElement) InsertBefore(newNode, referenceNode Node) Node {

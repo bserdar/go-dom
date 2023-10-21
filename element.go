@@ -93,3 +93,27 @@ type Element interface {
 	// namespace, from the current node.
 	SetAttributeNS(uri string, name string, value string)
 }
+
+type NamedNodeMap interface {
+	GetLength() int
+
+	// Returns a Attr, corresponding to the given name.
+	GetNamedItem(string) Attr
+
+	// Replaces, or adds, the Attr identified in the map by the given name.
+	SetNamedItem(Attr)
+
+	// Removes the Attr identified by the given name
+	RemoveNamedItem(string)
+
+	// Returns the Attr at the given index, or null if the index is higher or equal to the number of nodes
+	Item(int) Attr
+
+	// Returns a Attr identified by a namespace and related local name.
+	GetNamedItemNS(uri string, name string) Attr
+
+	// Replaces, or adds, the Attr identified in the map by the given namespace and related local name.
+	SetNamedItemNS(Attr)
+
+	RemoveNamedItemNS(uri string, name string)
+}
