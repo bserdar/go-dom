@@ -64,7 +64,7 @@ func (doc *BasicDocument) CreateAttributeNS(ns string, name string) Attr {
 
 // Creates a new element with the given tag name.
 func (doc *BasicDocument) CreateElement(tag string) Element {
-	return &BasicElement{
+	el := &BasicElement{
 		basicNode: basicNode{
 			ownerDocument: doc,
 		},
@@ -74,11 +74,13 @@ func (doc *BasicDocument) CreateElement(tag string) Element {
 			},
 		},
 	}
+	el.attributes.owner = el
+	return el
 }
 
 // Creates a new element with the given tag name and namespace URI.
 func (doc *BasicDocument) CreateElementNS(ns string, tag string) Element {
-	return &BasicElement{
+	el := &BasicElement{
 		basicNode: basicNode{
 			ownerDocument: doc,
 		},
@@ -89,6 +91,8 @@ func (doc *BasicDocument) CreateElementNS(ns string, tag string) Element {
 			},
 		},
 	}
+	el.attributes.owner = el
+	return el
 }
 
 // Creates a new CDATA node and returns it.

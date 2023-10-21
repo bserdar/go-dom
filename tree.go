@@ -34,7 +34,7 @@ func (node *tnode) nextSibling() Node {
 	if node.parent == nil {
 		return nil
 	}
-	if node.parent.treeNode().lastChild().treeNode() == node {
+	if node.parent.treeNode().child == node.next {
 		return nil
 	}
 	return node.next

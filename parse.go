@@ -115,7 +115,7 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 				}
 				newAttr.name = name
 				newAttr.value = attr.Value
-				newElement.attributes.SetNamedItem(newAttr)
+				newElement.SetAttributeNode(newAttr)
 			}
 			newElement.dictionary = dict.dict()
 			elementStack[len(elementStack)-1].el.AppendChild(newElement)
