@@ -297,6 +297,9 @@ func (doc *BasicDocument) AdoptNode(node Node) Node {
 			Op:  "AdoptNode",
 		})
 	}
+	if node.GetOwnerDocument() == doc {
+		return node
+	}
 	if node.GetParentNode() != nil {
 		detachChild(node.GetParentNode(), node)
 	}
@@ -305,6 +308,7 @@ func (doc *BasicDocument) AdoptNode(node Node) Node {
 	}
 	var setOwner func(Node)
 	setOwner = func(nd Node) {
+		// TODO: Deal with namespaces
 		nd.(setOwnerSupport).setOwner(doc)
 		for ch := nd.GetFirstChild(); ch != nil; ch = ch.GetNextSibling() {
 			setOwner(ch)

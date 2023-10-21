@@ -9,18 +9,13 @@ type Name struct {
 	xml.Name
 	// Namespace prefix
 	Prefix string
-	qname  string
 }
 
 func (name *Name) QName() string {
-	if len(name.qname) == 0 {
-		if len(name.Prefix) == 0 {
-			name.qname = name.Local
-		} else {
-			name.qname = name.Prefix + ":" + name.Local
-		}
+	if len(name.Prefix) == 0 {
+		return name.Local
 	}
-	return name.qname
+	return name.Prefix + ":" + name.Local
 }
 
 // ParseName splits the input at ':'

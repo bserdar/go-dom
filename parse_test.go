@@ -139,6 +139,10 @@ xmlns:f="https://test.com/furniture">
 		t.Errorf("Wrong attr: %v", el.(*BasicElement).attributes)
 	}
 
+	if v, ok := el.GetAttribute("attr"); v != "value" || !ok {
+		t.Errorf("Wrong attr: %v", el.(*BasicElement).attributes)
+	}
+
 	txt := el.GetFirstChild().(Text)
 	if txt.GetValue() != "Apples" {
 		t.Errorf("Wrong text: %v", txt)

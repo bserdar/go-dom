@@ -36,9 +36,6 @@ type Document interface {
 	//Creates a new ProcessingInstruction object.
 	CreateProcessingInstruction(target, data string) ProcessingInstruction
 
-	// // Returns an object reference to the identified element.
-	// GetElementById(string) Element
-
 	// // Replaces entities, normalizes text nodes, etc.
 	// NormalizeDocument()
 

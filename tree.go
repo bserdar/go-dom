@@ -40,46 +40,65 @@ func (node *tnode) nextSibling() Node {
 	return node.next
 }
 
-// Insert child after given node. If after is nil, insert as last node
+// Insert child after given node. If after is nil, insert as first node
 func insertChildAfter(parent, newChild, after Node) {
 	newChildtn := newChild.treeNode()
 	newChildtn.parent = parent
 	parenttn := parent.treeNode()
 	parenttn.ver++
 	if after == nil {
-		after = parenttn.lastChild()
-		if after == nil {
+		first := parenttn.firstChild()
+		// newChild is the new first node
+		parenttn.child = newChild
+		if first == nil {
 			newChildtn.next = newChild
 			newChildtn.prev = newChild
-			parenttn.child = newChild
 			return
 		}
+		newChildtn.next = first
+		ftn := first.treeNode()
+		newChildtn.prev = ftn.prev
+		ftn.prev.treeNode().next = newChild
+		ftn.prev = newChild
+		return
 	}
 	newChildtn.prev = after
-	newChildtn.next = after.treeNode().next
-	after.treeNode().next.treeNode().prev = newChild
-	after.treeNode().next = newChild
+	atn := after.treeNode()
+	newChildtn.next = atn.next
+	atn.next.treeNode().prev = newChild
+	atn.next = newChild
 }
 
-// Insert child before given node. If before is nil, insert as first node
+// Insert child before given node. If before is nil, insert as last node
 func insertChildBefore(parent, newChild, before Node) {
 	newChildtn := newChild.treeNode()
 	newChildtn.parent = parent
 	parenttn := parent.treeNode()
 	parenttn.ver++
 	if before == nil {
-		before = parenttn.firstChild()
-		if before == nil {
+		last := parenttn.lastChild()
+		// newChild is the last node
+		if last == nil {
 			newChildtn.next = newChild
 			newChildtn.prev = newChild
 			parenttn.child = newChild
 			return
 		}
+		newChildtn.prev = last
+		ltn := last.treeNode()
+		newChildtn.next = ltn.next
+		ltn.next.treeNode().prev = newChild
+		ltn.next = newChild
+		return
+	}
+	if before == parenttn.child {
+		parenttn.child = newChild
 	}
 	newChildtn.next = before
-	newChildtn.prev = before.treeNode().prev
-	before.treeNode().prev.treeNode().next = newChild
-	before.treeNode().prev = newChild
+	btn := before.treeNode()
+	newChildtn.prev = btn.prev
+	btn.prev.treeNode().next = newChild
+	btn.prev = newChild
 }
 
 func detachChild(parent, child Node) {
@@ -89,6 +108,9 @@ func detachChild(parent, child Node) {
 		parenttn.ver++
 		if parenttn.child == child {
 			parenttn.child = childtn.next
+			if parenttn.child == child {
+				parenttn.child = nil
+			}
 		}
 	}
 	if childtn.next != nil {
