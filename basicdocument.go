@@ -226,33 +226,6 @@ func (doc *BasicDocument) Normalize() {
 	el.Normalize()
 }
 
-// // Replaces one child Node of the current one with the second one
-// // given in parameter.
-// func (doc *BasicDocument) ReplaceChild(newChild, oldChild Node) {
-// 	if newChild.GetOwnerDocument() != doc || newChild == doc {
-// 		panic(ErrHierarchyRequest)
-// 	}
-// 	if newChild.GetParentNode() != nil {
-// 		detachChild(newChild.GetParentNode(), newChild)
-// 	}
-// 	if frag, ok := newChild.(DocumentFragment); ok {
-// 		for child := frag.GetFirstChild(); child != nil; {
-// 			detachChild(frag, childNode)
-// 			insertChildAfter(parent, child, oldChild)
-// 		}
-// 		detachChild(doc, oldChild)
-// 		return frag
-// 	}
-// }
-
-// // Returns a live NodeList containing all the children of this node
-// // (including elements, text and comments). NodeList being live means
-// // that if the children of the Node change, the NodeList object is
-// // automatically updated.
-// func (doc *BasicDocument) GetChildNodes() NodeList {
-// 	return newBasicNodeLisr(doc)
-// }
-
 // Returns the Element that is a direct child of the document.
 func (doc *BasicDocument) GetDocumentElement() Element {
 	for child := doc.GetFirstChild(); child != nil; child = child.GetNextSibling() {

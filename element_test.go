@@ -107,6 +107,27 @@ func TestAttrNS(t *testing.T) {
 	}
 }
 
+func TestElementNS1(t *testing.T) {
+	input := `<root xmlns="http://example.org" xmlns:ns1="http://example.org/2"><el/></root>`
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	el := doc.GetDocumentElement().GetFirstChild().(Element)
+	if !el.IsDefaultNamespace("http://example.org") {
+		t.Errorf("Not def")
+	}
+	if el.LookupPrefix("http://example.org/2") != "ns1" {
+		t.Errorf("Not ns1")
+	}
+	if el.LookupNamespaceURI("ns1") != "http://example.org/2" {
+		t.Errorf("Not ns1")
+	}
+}
+
 func TestAttrNS2(t *testing.T) {
 	// XML with default namespaces, el in namespace, attr not
 	input := `<root xmlns="http://example.org"><el a1="val" /></root>`
@@ -160,6 +181,32 @@ func TestAttrNS2(t *testing.T) {
 	}
 }
 
+func TestNextPrev(t *testing.T) {
+	input := `<root> <el a1="val" />   <!--c--> <e2>  <e3>  </e3>  </e2>   </root>`
+
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	root := doc.GetDocumentElement()
+	el := root.GetFirstElementChild()
+	if el.GetTagName() != "el" {
+		t.Errorf("el")
+	}
+	e2 := el.GetNextElementSibling()
+	if e2.GetTagName() != "e2" {
+		t.Errorf("e2")
+	}
+	if e2.GetPreviousElementSibling() != el {
+		t.Errorf("Prev sibling")
+	}
+	if root.GetLastElementChild() != e2 {
+		t.Errorf("Last child")
+	}
+}
+
 func TestEqual(t *testing.T) {
 	input := `<root><el a1="val" />   <!--c--> </root>`
 
@@ -208,6 +255,67 @@ func TestAttrMod(t *testing.T) {
 	}
 
 	el.RemoveAttribute("a1")
+	if s, ok := el.GetAttribute("a1"); s != "" || ok {
+		t.Errorf("a1 still here")
+	}
+	if s, ok := el.GetAttribute("a2"); s != "new" || !ok {
+		t.Errorf("a2 wrong")
+	}
+
+	attr := doc.CreateAttribute("a1")
+	attr.SetValue("created")
+	el.SetAttributeNode(attr)
+	if s, ok := el.GetAttribute("a1"); s != "created" || !ok {
+		t.Errorf("a1 missing")
+	}
+	if s, ok := el.GetAttribute("a2"); s != "new" || !ok {
+		t.Errorf("a2 wrong")
+	}
+
+	attr = doc.CreateAttribute("a1")
+	attr.SetValue("created2")
+	el.SetAttributeNode(attr)
+	if s, ok := el.GetAttribute("a1"); s != "created2" || !ok {
+		t.Errorf("a1 missing")
+	}
+	if s, ok := el.GetAttribute("a2"); s != "new" || !ok {
+		t.Errorf("a2 wrong")
+	}
+}
+
+func TestNamedNodeMap(t *testing.T) {
+	input := `<root><el a1="val"/></root>`
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	el := doc.GetDocumentElement().GetFirstChild().(Element)
+	nnm := el.GetAttributes()
+	if nnm.GetLength() != 1 {
+		t.Errorf("len")
+	}
+	if nnm.Item(0).GetValue() != "val" {
+		t.Errorf("Index access")
+	}
+
+	if attr := nnm.GetNamedItem("a1"); attr.GetValue() != "val" {
+		t.Errorf("a1 not here")
+	}
+
+	attr2 := doc.CreateAttribute("a2")
+	attr2.SetValue("new")
+	nnm.SetNamedItem(attr2)
+	if s, ok := el.GetAttribute("a1"); s != "val" || !ok {
+		t.Errorf("a1 wrong")
+	}
+	if s, ok := el.GetAttribute("a2"); s != "new" || !ok {
+		t.Errorf("a2 wrong")
+	}
+
+	nnm.RemoveNamedItem("a1")
 	if s, ok := el.GetAttribute("a1"); s != "" || ok {
 		t.Errorf("a1 still here")
 	}

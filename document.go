@@ -30,9 +30,6 @@ type Document interface {
 	// Creates a text node.
 	CreateTextNode(string) Text
 
-	// // Creates a NodeIterator object.
-	// CreateNodeIterator(Node, WhatToShow, func(Node) bool) NodeIterator
-
 	//Creates a new ProcessingInstruction object.
 	CreateProcessingInstruction(target, data string) ProcessingInstruction
 

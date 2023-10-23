@@ -74,7 +74,7 @@ func (el *BasicElement) IsDefaultNamespace(uri string) bool {
 	if len(uri) == 0 {
 		return false
 	}
-	return el.LookupPrefix("") == uri
+	return el.LookupNamespaceURI("") == uri
 }
 
 // // The namespace URI of the element, or "" if it is no namespace.}

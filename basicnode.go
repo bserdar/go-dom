@@ -57,7 +57,7 @@ func (node *basicNode) IsDefaultNamespace(uri string) bool {
 	if node.parent == nil {
 		return false
 	}
-	return node.parent.LookupPrefix("") == uri
+	return node.parent.LookupNamespaceURI("") == uri
 }
 
 // Clean up all the text nodes under this element (merge adjacent,
