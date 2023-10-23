@@ -5,8 +5,8 @@ import (
 )
 
 type basicNamedNodeMap struct {
-	attrs    []Attr
-	mapAttrs map[xml.Name]Attr
+	attrs    []*BasicAttr
+	mapAttrs map[xml.Name]*BasicAttr
 }
 
 func (m *basicNamedNodeMap) GetLength() int {
@@ -18,7 +18,11 @@ func (m *basicNamedNodeMap) GetNamedItem(name string) Attr {
 	if m.mapAttrs == nil {
 		return nil
 	}
-	return m.mapAttrs[xml.Name{Local: name}]
+	item, ok := m.mapAttrs[xml.Name{Local: name}]
+	if !ok {
+		return nil
+	}
+	return item
 }
 
 // Returns a Attr identified by a namespace and related local name.
@@ -26,7 +30,11 @@ func (m *basicNamedNodeMap) GetNamedItemNS(uri string, name string) Attr {
 	if m.mapAttrs == nil {
 		return nil
 	}
-	return m.mapAttrs[xml.Name{Local: name, Space: uri}]
+	item, ok := m.mapAttrs[xml.Name{Local: name, Space: uri}]
+	if !ok {
+		return nil
+	}
+	return item
 }
 
 // Returns the Attr at the given index, or null if the index is higher or equal to the number of nodes
@@ -82,7 +90,7 @@ func (m *basicNamedNodeMap) setNamedItemNS(owner Node, attr Attr) {
 		})
 	}
 	if m.mapAttrs == nil {
-		m.mapAttrs = make(map[xml.Name]Attr)
+		m.mapAttrs = make(map[xml.Name]*BasicAttr)
 	}
 	ba := attr.(*BasicAttr)
 	qname := ba.name.Name
@@ -94,14 +102,14 @@ func (m *basicNamedNodeMap) setNamedItemNS(owner Node, attr Attr) {
 		delete(m.mapAttrs, qname)
 		for k := range m.attrs {
 			if m.attrs[k] == existing {
-				m.attrs[k] = attr
+				m.attrs[k] = ba
 				ba.parent = owner
 				return
 			}
 		}
 	}
-	m.mapAttrs[qname] = attr
-	m.attrs = append(m.attrs, attr)
+	m.mapAttrs[qname] = ba
+	m.attrs = append(m.attrs, ba)
 	ba.parent = owner
 }
 

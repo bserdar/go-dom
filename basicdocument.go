@@ -10,18 +10,15 @@ import (
 type BasicDocument struct {
 	basicNode
 
-	encoding         string
-	contentType      string
-	url              string
-	origin           string
-	typ              string
-	mode             string
-	defaultNamespace string
+	encoding    string
+	contentType string
+	url         string
+	origin      string
+	typ         string
+	mode        string
 }
 
 var _ Document = &BasicDocument{}
-
-func (doc *BasicDocument) getDefaultNamespace() string { return doc.defaultNamespace }
 
 // Returns "#document"
 func (doc *BasicDocument) GetNodeName() string { return "#document" }
@@ -169,7 +166,12 @@ func (doc *BasicDocument) CreateProcessingInstruction(target, data string) Proce
 // with a value of true if the namespace is the default namespace on
 // the given node or false if not.
 func (doc *BasicDocument) IsDefaultNamespace(uri string) bool {
-	return uri == doc.defaultNamespace
+	root := doc.GetDocumentElement()
+	if root == nil {
+		return false
+	}
+
+	return root.IsDefaultNamespace(uri)
 }
 
 // Returns a boolean value which indicates whether or not two nodes
@@ -184,8 +186,7 @@ func (doc *BasicDocument) IsEqualNode(node Node) bool {
 		nodeDoc.url != doc.url ||
 		nodeDoc.origin != doc.origin ||
 		nodeDoc.typ != doc.typ ||
-		nodeDoc.mode != doc.mode ||
-		nodeDoc.defaultNamespace != doc.defaultNamespace {
+		nodeDoc.mode != doc.mode {
 		return false
 	}
 	return isEqualNode(doc, node)
@@ -195,27 +196,24 @@ func (doc *BasicDocument) IsEqualNode(node Node) bool {
 // URI, if present, and "" if not. When multiple prefixes are
 // possible, the result is implementation-dependent.
 func (doc *BasicDocument) LookupPrefix(uri string) string {
-	el, _ := doc.GetDocumentElement().(*BasicElement)
+	el := doc.GetDocumentElement()
 	if el == nil {
 		return ""
 	}
-	s, _ := el.getPrefix(uri)
-	return s
+	return el.LookupPrefix(uri)
 }
 
 // Accepts a prefix and returns the namespace URI associated with it
-// on the given node if found (and "" if not). Supplying "" for
-// the prefix will return the default namespace.
+// on the given node if found (and "" if not).
 func (doc *BasicDocument) LookupNamespaceURI(prefix string) string {
 	if prefix == "" {
-		return doc.defaultNamespace
+		return ""
 	}
-	el, _ := doc.GetDocumentElement().(*BasicElement)
+	el, _ := doc.GetDocumentElement().(Element)
 	if el == nil {
 		return ""
 	}
-	s, _ := el.getNS(prefix)
-	return s
+	return el.LookupNamespaceURI(prefix)
 }
 
 // Clean up all the text nodes under this element (merge adjacent,

@@ -10,44 +10,35 @@ import (
 
 const (
 	xmlURL      = "http://www.w3.org/XML/1998/namespace"
+	xmlnsURL    = "http://www.w3.org/2000/xmlns"
 	xmlnsPrefix = "xmlns"
 	xmlPrefix   = "xml"
 )
 
-func Parse(decoder *xml.Decoder) (Document, error) {
-	ret := &BasicDocument{}
-	ret.ownerDocument = ret
-
-	type stackEl interface {
-		Node
-		getDefaultNamespace() string
-	}
-	type stackItem struct {
-		el   stackEl
-		dict *nsMap
-	}
-	elementStack := make([]stackItem, 0, 32)
-	elementStack = append(elementStack, stackItem{
-		el:   ret,
-		dict: newNsMap(),
-	})
-	elementStack[0].dict.add(xmlPrefix, xmlURL)
-
-	makeName := func(tokenName xml.Name, dict *nsMap, defaultNamespace string) Name {
-		name := Name{}
-		if len(tokenName.Space) == 0 {
-			name.Space = defaultNamespace
-			name.Local = tokenName.Local
-		} else {
-			name.Space, _ = dict.getNS(tokenName.Space)
-			// Preserve Go XML decoder semantics: Unknown namespace uses the prefix as namespace
-			if len(name.Space) == 0 {
-				name.Space = tokenName.Space
+// Parses an XML document
+func Parse(decoder *xml.Decoder) (ret Document, resultErr error) {
+	defer func() {
+		if err := recover(); err != nil {
+			if e, ok := err.(error); ok {
+				resultErr = e
+			} else {
+				resultErr = fmt.Errorf("%v", err)
 			}
-			name.Prefix = tokenName.Space
-			name.Local = tokenName.Local
 		}
-		return name
+	}()
+
+	bd := &BasicDocument{}
+	bd.ownerDocument = bd
+	ret = bd
+
+	interner := make(map[string]string)
+	intern := func(s string) string {
+		existing, ok := interner[s]
+		if ok {
+			return existing
+		}
+		interner[s] = s
+		return s
 	}
 
 	autoClose := func(name xml.Name) bool {
@@ -62,6 +53,34 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 		return false
 	}
 
+	elementStack := make([]xml.Name, 0, 16)
+
+	var parent *BasicElement
+	autoCloseSeen := false
+
+	closeAutoClose := func() {
+		if !autoCloseSeen {
+			return
+		}
+		autoCloseSeen = false
+		elementStack = elementStack[:len(elementStack)-1]
+		par := parent.GetParentNode()
+		if _, ok := par.(*BasicDocument); ok {
+			parent = nil
+		} else {
+			parent = par.(*BasicElement)
+		}
+	}
+
+	isSpaceOrEmpty := func(s string) bool {
+		for _, x := range s {
+			if !unicode.IsSpace(x) {
+				return false
+			}
+		}
+		return true
+	}
+
 	for {
 		tok, err := decoder.RawToken()
 		if err == io.EOF {
@@ -73,54 +92,67 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 		switch token := tok.(type) {
 		case xml.StartElement:
 
-			defaultNamespace := ""
-			dict := newNsMap()
-			if len(elementStack) > 1 {
-				defaultNamespace = elementStack[len(elementStack)-1].el.getDefaultNamespace()
-				dict.parent = elementStack[len(elementStack)-1].dict
+			closeAutoClose()
+
+			elementStack = append(elementStack, token.Name)
+			newElement := ret.CreateElement(intern(token.Name.Local)).(*BasicElement) // Create an empty element for now
+			newElement.name.Prefix = intern(token.Name.Space)
+			if parent == nil {
+				ret.AppendChild(newElement) // This is the document element
 			} else {
-				dict.add(xmlPrefix, xmlURL)
+				parent.AppendChild(newElement)
 			}
+
+			// First, create all attributes without namespaces
 			for _, attr := range token.Attr {
-				switch {
-				case attr.Name.Space == "" && attr.Name.Local == xmlnsPrefix:
-					// Set the default namespace for this element
-					defaultNamespace = attr.Value
-				case attr.Name.Space == xmlnsPrefix:
-					// Set the namespace uri for a prefix
-					if err := dict.add(attr.Name.Local, attr.Value); err != nil {
-						return nil, err
-					}
-				case attr.Name.Space == xmlPrefix:
-					// Namespace is xmlURL
-				}
-			}
-			// We processed the namespaces, now deal with the element itself
-			name := makeName(token.Name, dict, defaultNamespace)
-			var newElement *BasicElement
-			if len(name.Space) > 0 {
-				newElement = ret.CreateElementNS(name.Space, name.Local).(*BasicElement)
-			} else {
-				newElement = ret.CreateElement(name.Local).(*BasicElement)
-			}
-			newElement.defaultNamespace = defaultNamespace
-			newElement.name = name
-			for _, attr := range token.Attr {
-				name := makeName(attr.Name, dict, "")
-				var newAttr *BasicAttr
-				if len(name.Space) > 0 {
-					newAttr = ret.CreateAttributeNS(name.Space, name.Local).(*BasicAttr)
-				} else {
-					newAttr = ret.CreateAttribute(name.Local).(*BasicAttr)
-				}
-				newAttr.name = name
+				newAttr := ret.CreateAttribute(intern(attr.Name.Local)).(*BasicAttr)
+				newAttr.name.Prefix = intern(attr.Name.Space)
 				newAttr.value = attr.Value
-				newElement.SetAttributeNode(newAttr)
+				newAttr.parent = newElement
+				newElement.attributes.attrs = append(newElement.attributes.attrs, newAttr)
 			}
-			newElement.dictionary = dict.dict()
-			elementStack[len(elementStack)-1].el.AppendChild(newElement)
-			if !autoClose(name.Name) {
-				elementStack = append(elementStack, stackItem{el: newElement, dict: dict})
+
+			// Now process all xmlns attributes
+			for _, attr := range newElement.attributes.attrs {
+				if attr.name.Prefix == xmlnsPrefix {
+					attr.name.Space = xmlnsURL
+					if newElement.name.Prefix == attr.name.Local {
+						newElement.name.Space = intern(attr.value)
+						attr.value = intern(attr.value)
+					}
+				} else if len(attr.name.Prefix) == 0 && attr.name.Local == xmlnsPrefix {
+					if len(newElement.name.Prefix) == 0 {
+						newElement.name.Space = intern(attr.value)
+						attr.value = intern(attr.value)
+					}
+				} else {
+					// If attr has prefix, then we have to find namespace
+					if len(attr.name.Prefix) > 0 {
+						// Is namespace defined here?
+						for _, a := range newElement.attributes.attrs {
+							if a.name.Prefix == xmlnsPrefix && a.name.Local == attr.name.Prefix {
+								attr.name.Space = a.value
+								break
+							}
+						}
+						if len(attr.name.Space) == 0 && parent != nil {
+							attr.name.Space = parent.LookupNamespaceURI(attr.name.Prefix)
+						}
+					}
+				}
+			}
+			newElement.attributes.mapAttrs = make(map[xml.Name]*BasicAttr)
+			for _, a := range newElement.attributes.attrs {
+				newElement.attributes.mapAttrs[a.name.Name] = a
+			}
+			// If namespace is not yet resolved, resolve it
+			if len(newElement.name.Space) == 0 {
+				newElement.name.Space = newElement.LookupNamespaceURI(newElement.name.Prefix)
+			}
+
+			parent = newElement
+			if autoClose(token.Name) {
+				autoCloseSeen = true
 			}
 
 		case xml.EndElement:
@@ -129,47 +161,53 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 					Msg: "Extra objects before document",
 				}
 			}
-			if autoClose(token.Name) {
-				break
+			if autoCloseSeen {
+				if elementStack[len(elementStack)-1] == token.Name {
+					autoCloseSeen = false
+					elementStack = elementStack[:len(elementStack)-1]
+					break
+				}
+				closeAutoClose()
 			}
+
 			last := elementStack[len(elementStack)-1]
-			if el, ok := last.el.(*BasicElement); ok {
-				name := makeName(token.Name, last.dict, el.defaultNamespace)
-				if name.Space == el.name.Space && strings.EqualFold(name.Local, el.name.Local) {
-					// ok
-				} else {
-					return nil, &xml.SyntaxError{
-						Msg: fmt.Sprintf("Mismatched closing tag %s", name.Local),
-					}
+			if last.Space != token.Name.Space || !strings.EqualFold(last.Local, token.Name.Local) {
+				return nil, &xml.SyntaxError{
+					Msg: fmt.Sprintf("Mismatched closing tag %s", token.Name.Local),
 				}
 			}
 			elementStack = elementStack[:len(elementStack)-1]
+			par := parent.GetParentNode()
+			if _, ok := par.(*BasicDocument); ok {
+				parent = nil
+			} else {
+				parent = par.(*BasicElement)
+			}
 
 		case xml.CharData:
-			if len(elementStack) == 1 {
+			if len(elementStack) == 0 {
 				// charData must be only spaces
-				for _, x := range string(token) {
-					if !unicode.IsSpace(x) {
-						return nil, &xml.SyntaxError{
-							Msg: "Extra characters before document",
-						}
+				if !isSpaceOrEmpty(string(token)) {
+					return nil, &xml.SyntaxError{
+						Msg: "Extra characters before document",
 					}
 				}
 			} else {
 				newNode := ret.CreateTextNode(string(token))
-				elementStack[len(elementStack)-1].el.AppendChild(newNode)
+				parent.AppendChild(newNode)
 			}
 
 		case xml.Comment:
 			newNode := ret.CreateComment(string(token))
-			elementStack[len(elementStack)-1].el.AppendChild(newNode)
+			parent.AppendChild(newNode)
 
 		case xml.ProcInst:
+			closeAutoClose()
 			newNode := ret.CreateProcessingInstruction(token.Target, string(token.Inst))
-			elementStack[len(elementStack)-1].el.AppendChild(newNode)
+			parent.AppendChild(newNode)
 
 		case xml.Directive:
-			if len(elementStack) == 1 {
+			if len(elementStack) == 0 {
 				return nil, &xml.SyntaxError{
 					Msg: "XML directive before document",
 				}
@@ -179,7 +217,7 @@ func Parse(decoder *xml.Decoder) (Document, error) {
 			if strings.HasPrefix(content, "CDATA[") && strings.HasSuffix(content, "]]") {
 				newNode = ret.CreateCDATASection(string(content[6 : len(content)-2]))
 			}
-			elementStack[len(elementStack)-1].el.AppendChild(newNode)
+			parent.AppendChild(newNode)
 		}
 	}
 	return ret, nil

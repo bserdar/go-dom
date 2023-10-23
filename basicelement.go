@@ -2,16 +2,12 @@ package dom
 
 type BasicElement struct {
 	basicNode
-	dictionary
 
-	attributes       basicNamedNodeMap
-	name             Name
-	defaultNamespace string
+	attributes basicNamedNodeMap
+	name       Name
 }
 
 var _ Element = &BasicElement{}
-
-func (el *BasicElement) getDefaultNamespace() string { return el.defaultNamespace }
 
 // Returns a boolean value indicating whether or not the two nodes are
 // the same (that is, they reference the same object).
@@ -52,7 +48,10 @@ func (el *BasicElement) GetLocalName() string {
 // with a value of true if the namespace is the default namespace on
 // the given node or false if not.
 func (el *BasicElement) IsDefaultNamespace(uri string) bool {
-	return uri == el.defaultNamespace
+	if len(uri) == 0 {
+		return false
+	}
+	return el.LookupPrefix("") == uri
 }
 
 // // The namespace URI of the element, or "" if it is no namespace.}
@@ -80,19 +79,53 @@ func (el *BasicElement) GetPreviousElementSibling() Element {
 // URI, if present, and "" if not. When multiple prefixes are
 // possible, the result is implementation-dependent.
 func (el *BasicElement) LookupPrefix(uri string) string {
-	s, _ := el.getPrefix(uri)
-	return s
+	if el.name.Space == uri && len(el.name.Prefix) > 0 {
+		return el.name.Prefix
+	}
+	for _, attr := range el.attributes.attrs {
+		if attr.name.Prefix == xmlnsPrefix && attr.value == uri {
+			return attr.name.Local
+		}
+	}
+	if el.parent == nil {
+		return ""
+	}
+	if _, ok := el.parent.(*BasicDocument); ok {
+		return ""
+	}
+	return el.parent.LookupPrefix(uri)
 }
 
 // Accepts a prefix and returns the namespace URI associated with it
 // on the given node if found (and "" if not). Supplying "" for
 // the prefix will return the default namespace.
 func (el *BasicElement) LookupNamespaceURI(prefix string) string {
-	if prefix == "" {
-		return el.defaultNamespace
+	switch prefix {
+	case xmlPrefix:
+		return xmlURL
+	case xmlnsPrefix:
+		return xmlnsURL
 	}
-	s, _ := el.getNS(prefix)
-	return s
+	if len(el.name.Space) > 0 && el.name.Prefix == prefix {
+		return el.name.Space
+	}
+	for _, attr := range el.attributes.attrs {
+		if attr.name.Space == xmlnsURL {
+			if attr.name.Prefix == xmlnsPrefix && attr.name.Local == prefix {
+				return attr.value
+			}
+			if len(prefix) == 0 && len(attr.name.Prefix) == 0 && attr.name.Local == xmlnsPrefix {
+				return attr.value
+			}
+		}
+	}
+	if el.parent == nil {
+		return ""
+	}
+	if _, ok := el.parent.(*BasicDocument); ok {
+		return ""
+	}
+	return el.parent.LookupNamespaceURI(prefix)
 }
 
 func nextElementSibling(start Node) Element {
@@ -146,7 +179,7 @@ func (el *BasicElement) GetAttribute(name string) (string, bool) {
 func (el *BasicElement) GetAttributeNames() []string {
 	ret := make([]string, el.attributes.GetLength())
 	for i := 0; i < len(ret); i++ {
-		ret[i] = el.attributes.attrs[i].(*BasicAttr).name.QName()
+		ret[i] = el.attributes.attrs[i].name.QName()
 	}
 	return ret
 }

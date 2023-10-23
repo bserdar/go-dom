@@ -64,10 +64,13 @@ func (node *basicNode) HasChildNodes() bool {
 // with a value of true if the namespace is the default namespace on
 // the given node or false if not.
 func (node *basicNode) IsDefaultNamespace(uri string) bool {
+	if len(uri) == 0 {
+		return false
+	}
 	if node.parent == nil {
 		return false
 	}
-	return node.parent.IsDefaultNamespace(uri)
+	return node.parent.LookupPrefix("") == uri
 }
 
 // Clean up all the text nodes under this element (merge adjacent,

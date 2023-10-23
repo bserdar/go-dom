@@ -166,8 +166,7 @@ type Node interface {
 	LookupPrefix(string) string
 
 	// Accepts a prefix and returns the namespace URI associated with it
-	// on the given node if found (and "" if not). Supplying "" for
-	// the prefix will return the default namespace.
+	// on the given node if found (and "" if not).
 	LookupNamespaceURI(string) string
 
 	// Clean up all the text nodes under this element (merge adjacent,
