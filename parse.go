@@ -15,7 +15,11 @@ const (
 	xmlPrefix   = "xml"
 )
 
-// Parses an XML document
+// Parses an XML document.
+//
+// If decoder.Strict is false, the parser looks at decoder.AutoClose
+// to handle auto-closing HTML tags. Otherwise it is a strict XML
+// parser.
 func Parse(decoder *xml.Decoder) (ret Document, resultErr error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -27,9 +31,7 @@ func Parse(decoder *xml.Decoder) (ret Document, resultErr error) {
 		}
 	}()
 
-	bd := &BasicDocument{}
-	bd.ownerDocument = bd
-	ret = bd
+	ret = NewDocument()
 
 	interner := make(map[string]string)
 	intern := func(s string) string {
@@ -198,26 +200,40 @@ func Parse(decoder *xml.Decoder) (ret Document, resultErr error) {
 			}
 
 		case xml.Comment:
-			newNode := ret.CreateComment(string(token))
-			parent.AppendChild(newNode)
+			if len(elementStack) == 0 {
+				ret.AppendChild(ret.CreateComment(string(token)))
+			} else {
+				parent.AppendChild(ret.CreateComment(string(token)))
+			}
 
 		case xml.ProcInst:
 			closeAutoClose()
 			newNode := ret.CreateProcessingInstruction(token.Target, string(token.Inst))
-			parent.AppendChild(newNode)
+			if parent == nil {
+				ret.AppendChild(newNode)
+			} else {
+				parent.AppendChild(newNode)
+			}
 
 		case xml.Directive:
-			if len(elementStack) == 0 {
-				return nil, &xml.SyntaxError{
-					Msg: "XML directive before document",
-				}
-			}
-			var newNode Node
 			content := string(token)
 			if strings.HasPrefix(content, "CDATA[") && strings.HasSuffix(content, "]]") {
-				newNode = ret.CreateCDATASection(string(content[6 : len(content)-2]))
+				if len(elementStack) == 0 {
+					return nil, &xml.SyntaxError{
+						Msg: "CDATA before document",
+					}
+				}
+				newNode := ret.CreateCDATASection(string(content[6 : len(content)-2]))
+				parent.AppendChild(newNode)
+			} else {
+				documentType, ok, err := parseDocumentType([]byte(token))
+				if err != nil {
+					return nil, err
+				}
+				if ok {
+					parent.AppendChild(documentType)
+				}
 			}
-			parent.AppendChild(newNode)
 		}
 	}
 	return ret, nil

@@ -41,3 +41,94 @@ func TestNormalize(t *testing.T) {
 		t.Errorf("Extra nodes")
 	}
 }
+
+func TestClone(t *testing.T) {
+	input := `<note>
+<to attr="val">  </to>  <!--comment-->
+</note>`
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	newDoc := doc.CloneNode(true)
+	if !doc.IsEqualNode(newDoc) {
+		t.Errorf("Not equal")
+	}
+}
+
+func TestProcessingInstruction(t *testing.T) {
+	input := `<?xml version = "1.0" ?>
+<note>
+<to attr="val">  </to>  <!--comment-->
+</note>`
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	pi := doc.GetFirstChild().(ProcessingInstruction)
+	if pi.GetTarget() != "xml" {
+		t.Errorf("Wrong target")
+	}
+	if pi.GetValue() != `version = "1.0" ` {
+		t.Errorf("Wrong text: %s", pi.GetValue())
+	}
+}
+
+func TestAdopt(t *testing.T) {
+	input := `<note>
+<to attr="val">  </to>  <!--comment-->
+</note>`
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	newDoc := NewDocument()
+	root := newDoc.CreateElement("newRoot")
+	newDoc.AppendChild(root)
+
+	toNode := doc.GetDocumentElement().GetFirstElementChild()
+	newToNode := newDoc.AdoptNode(toNode)
+	if newToNode != toNode {
+		t.Errorf("Wrong return value")
+	}
+	root.AppendChild(newToNode)
+
+	if doc.GetDocumentElement().GetFirstElementChild() != nil {
+		t.Errorf("still in original doc")
+	}
+
+	if newDoc.GetDocumentElement().GetFirstChild() != newToNode {
+		t.Errorf("Not in new doc")
+	}
+}
+
+func TestDTD(t *testing.T) {
+	input := `<?xml version="1.0"?>
+<!DOCTYPE note
+[
+<!ELEMENT note (to,from,heading,body)>
+<!ELEMENT to (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT heading (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+]>
+
+<note>
+<to attr="val">  </to>  <!--comment-->
+</note>`
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	_ = doc
+}

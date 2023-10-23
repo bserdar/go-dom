@@ -51,9 +51,13 @@ func (attr *BasicAttr) SetValue(v string) {
 }
 
 func (attr *BasicAttr) CloneNode(bool) Node {
+	return attr.cloneNode(attr.ownerDocument, false)
+}
+
+func (attr *BasicAttr) cloneNode(owner Document, deep bool) Node {
 	ret := BasicAttr{
 		basicNode: basicNode{
-			ownerDocument: attr.ownerDocument,
+			ownerDocument: owner.(*BasicDocument),
 		},
 		name:  attr.name,
 		value: attr.value,

@@ -48,6 +48,14 @@ func (cd *BasicCDataSection) IsEqualNode(node Node) bool {
 	return n.text == cd.text
 }
 
+func (cd *BasicCDataSection) CloneNode(deep bool) Node {
+	return cd.cloneNode(cd.ownerDocument, deep)
+}
+
+func (cd *BasicCDataSection) cloneNode(owner Document, deep bool) Node {
+	return owner.CreateCDATASection(cd.text)
+}
+
 type BasicText struct {
 	basicChardata
 }
@@ -72,6 +80,14 @@ func (cd *BasicText) IsEqualNode(node Node) bool {
 // the same (that is, they reference the same object).
 func (cd *BasicText) IsSameNode(node Node) bool { return node == cd }
 
+func (cd *BasicText) CloneNode(deep bool) Node {
+	return cd.cloneNode(cd.ownerDocument, deep)
+}
+
+func (cd *BasicText) cloneNode(owner Document, deep bool) Node {
+	return owner.CreateTextNode(cd.text)
+}
+
 type BasicComment struct {
 	basicChardata
 }
@@ -95,6 +111,14 @@ func (cd *BasicComment) IsEqualNode(node Node) bool {
 // Returns a boolean value indicating whether or not the two nodes are
 // the same (that is, they reference the same object).
 func (cd *BasicComment) IsSameNode(node Node) bool { return node == cd }
+
+func (cd *BasicComment) CloneNode(deep bool) Node {
+	return cd.cloneNode(cd.ownerDocument, deep)
+}
+
+func (cd *BasicComment) cloneNode(owner Document, deep bool) Node {
+	return owner.CreateComment(cd.text)
+}
 
 type BasicProcessingInstruction struct {
 	basicChardata
@@ -124,3 +148,11 @@ func (p *BasicProcessingInstruction) IsSameNode(node Node) bool { return node ==
 func (p *BasicProcessingInstruction) GetTarget() string { return p.target }
 
 func (p *BasicProcessingInstruction) SetTarget(t string) { p.target = t }
+
+func (p *BasicProcessingInstruction) CloneNode(deep bool) Node {
+	return p.cloneNode(p.ownerDocument, deep)
+}
+
+func (p *BasicProcessingInstruction) cloneNode(owner Document, deep bool) Node {
+	return owner.CreateProcessingInstruction(p.target, p.text)
+}

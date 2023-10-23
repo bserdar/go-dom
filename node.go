@@ -132,13 +132,13 @@ type Node interface {
 	// child of the current node.
 	RemoveChild(Node)
 
-	// // Clone a Node, and optionally, all of its contents.
-	// //
-	// // Returns the new Node cloned. The cloned node has no parent and is not
-	// // part of the document, until it is added to another node that is
-	// // part of the document, using Node.appendChild() or a similar
-	// // method.
-	// CloneNode(deep bool) Node
+	// Clone a Node, and optionally, all of its contents.
+	//
+	// Returns the new Node cloned. The cloned node has no parent and is not
+	// part of the document, until it is added to another node that is
+	// part of the document, using Node.appendChild() or a similar
+	// method.
+	CloneNode(deep bool) Node
 
 	// Returns true or false value indicating whether or not a node is a
 	// descendant of the calling node.
@@ -178,6 +178,7 @@ type Node interface {
 	// ReplaceChild(newChild, oldChild Node)
 
 	treeNode() *tnode
+	cloneNode(owner Document, deep bool) Node
 }
 
 type NodeList interface {

@@ -41,6 +41,14 @@ func (node *basicNode) IsEqualNode(Node) bool {
 	panic("basicNode.IsEqualNode should not have been called")
 }
 
+func (node *basicNode) CloneNode(bool) Node {
+	panic("basicNode.CloneNode should not have been called")
+}
+
+func (node *basicNode) cloneNode(_ Document, _ bool) Node {
+	panic("basicNode.cloneNode should not have been called")
+}
+
 // Returns a boolean value indicating whether or not the element has
 // any child nodes.
 func (node *basicNode) HasChildNodes() bool {
@@ -235,6 +243,7 @@ func validatePreInsertion(node, parent, beforeChild Node, op string) error {
 		nodeType != ELEMENT_NODE &&
 		nodeType != CDATA_SECTION_NODE &&
 		nodeType != TEXT_NODE &&
+		nodeType != PROCESSING_INSTRUCTION_NODE &&
 		nodeType != COMMENT_NODE {
 		return ErrHierarchyRequest(op, "Invalid node type")
 	}

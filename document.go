@@ -35,4 +35,7 @@ type Document interface {
 
 	//	Adopt node from an external document.
 	AdoptNode(Node) Node
+
+	// Return the document type node
+	GetDocumentType() DocumentType
 }

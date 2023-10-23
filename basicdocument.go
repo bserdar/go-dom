@@ -9,16 +9,15 @@ import (
 // Implementation is guided by https://dom.spec.whatwg.org/
 type BasicDocument struct {
 	basicNode
-
-	encoding    string
-	contentType string
-	url         string
-	origin      string
-	typ         string
-	mode        string
 }
 
 var _ Document = &BasicDocument{}
+
+func NewDocument() Document {
+	ret := &BasicDocument{}
+	ret.ownerDocument = ret
+	return ret
+}
 
 // Returns "#document"
 func (doc *BasicDocument) GetNodeName() string { return "#document" }
@@ -139,28 +138,26 @@ func (doc *BasicDocument) CreateProcessingInstruction(target, data string) Proce
 	}
 }
 
-// // Clone a Node, and optionally, all of its contents.
-// //
-// // Returns the new Node cloned. The cloned node has no parent and is not
-// // part of the document, until it is added to another node that is
-// // part of the document, using Node.appendChild() or a similar
-// // method.
-// func (doc *BasicDocument) CloneNode(deep bool) Node {
-// 	ret := &BasicDocument{
-// 		encoding:    doc.encoding,
-// 		contentType: doc.contentType,
-// 		url:         doc.url,
-// 		origin:      doc.origin,
-// 		typ:         doc.typ,
-// 		mode:        doc.mode,
-// 	}
-// 	if deep {
-// 		for child := doc.GetFirstChild(); child != nil; child = child.GetNextSibling() {
-// 			cloneNode(ret, child, deep)
-// 		}
-// 	}
-// 	return ret
-// }
+// Clone a Node, and optionally, all of its contents.
+//
+// Returns the new Node cloned. The cloned node has no parent and is not
+// part of the document, until it is added to another node that is
+// part of the document, using Node.appendChild() or a similar
+// method.
+func (doc *BasicDocument) CloneNode(deep bool) Node {
+	return doc.cloneNode(nil, deep)
+}
+
+func (doc *BasicDocument) cloneNode(_ Document, deep bool) Node {
+	ret := NewDocument().(*BasicDocument)
+	if deep {
+		for child := doc.GetFirstChild(); child != nil; child = child.GetNextSibling() {
+			newNode := child.cloneNode(ret, deep)
+			ret.AppendChild(newNode)
+		}
+	}
+	return ret
+}
 
 // Accepts a namespace URI as an argument and returns a boolean value
 // with a value of true if the namespace is the default namespace on
@@ -177,18 +174,6 @@ func (doc *BasicDocument) IsDefaultNamespace(uri string) bool {
 // Returns a boolean value which indicates whether or not two nodes
 // are of the same type and all their defining data points match.
 func (doc *BasicDocument) IsEqualNode(node Node) bool {
-	nodeDoc, ok := node.(*BasicDocument)
-	if !ok {
-		return false
-	}
-	if nodeDoc.encoding != doc.encoding ||
-		nodeDoc.contentType != doc.contentType ||
-		nodeDoc.url != doc.url ||
-		nodeDoc.origin != doc.origin ||
-		nodeDoc.typ != doc.typ ||
-		nodeDoc.mode != doc.mode {
-		return false
-	}
 	return isEqualNode(doc, node)
 }
 
@@ -232,6 +217,16 @@ func (doc *BasicDocument) GetDocumentElement() Element {
 		el, ok := child.(Element)
 		if ok {
 			return el
+		}
+	}
+	return nil
+}
+
+// GetDocumentType returns the document type node
+func (doc *BasicDocument) GetDocumentType() DocumentType {
+	for ch := doc.GetFirstChild(); ch != nil; ch = ch.GetNextSibling() {
+		if dt, ok := ch.(DocumentType); ok {
+			return dt
 		}
 	}
 	return nil
@@ -281,7 +276,6 @@ func (doc *BasicDocument) AdoptNode(node Node) Node {
 	}
 	var setOwner func(Node)
 	setOwner = func(nd Node) {
-		// TODO: Deal with namespaces
 		nd.(setOwnerSupport).setOwner(doc)
 		for ch := nd.GetFirstChild(); ch != nil; ch = ch.GetNextSibling() {
 			setOwner(ch)

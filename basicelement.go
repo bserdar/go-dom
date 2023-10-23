@@ -361,3 +361,23 @@ func (el *BasicElement) Normalize() {
 		}
 	}
 }
+
+func (el *BasicElement) CloneNode(deep bool) Node {
+	return el.cloneNode(el.ownerDocument, deep)
+}
+
+func (el *BasicElement) cloneNode(owner Document, deep bool) Node {
+	newElement := owner.CreateElement("").(*BasicElement)
+	newElement.name = el.name
+	for _, attr := range el.attributes.attrs {
+		newAttr := attr.cloneNode(owner, deep).(*BasicAttr)
+		newElement.attributes.setNamedItem(newElement, newAttr)
+	}
+	if deep {
+		for child := el.GetFirstChild(); child != nil; child = child.GetNextSibling() {
+			newEl := child.cloneNode(owner, deep)
+			newElement.AppendChild(newEl)
+		}
+	}
+	return newElement
+}
