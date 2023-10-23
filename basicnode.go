@@ -177,18 +177,8 @@ func (node *basicNode) Contains(nd Node) bool {
 }
 
 // Inserts a Node before the reference node as a child of a
-// specified parent node. Returns the added child (unless newNode is
-// a DocumentFragment, in which case the empty DocumentFragment is
-// returned).
+// specified parent node. Returns the added child
 func insertBefore(parent, newNode, referenceNode Node) Node {
-	// Document fragment?
-	if frag, ok := newNode.(DocumentFragment); ok {
-		for child := frag.GetFirstChild(); child != nil; {
-			detachChild(frag, child)
-			insertChildBefore(parent, child, nil)
-		}
-		return frag
-	}
 	detachChild(parent, newNode)
 	insertChildBefore(parent, newNode, nil)
 	return newNode

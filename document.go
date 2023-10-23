@@ -18,9 +18,6 @@ type Document interface {
 	// Creates a new comment node and returns it.
 	CreateComment(string) Comment
 
-	// // Creates a new document fragment.
-	// CreateDocumentFragment() DocumentFragment
-
 	// Creates a new element with the given tag name.
 	CreateElement(string) Element
 
