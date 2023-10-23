@@ -11,19 +11,6 @@ func (node *basicNode) setOwner(doc *BasicDocument) {
 	node.ownerDocument = doc
 }
 
-// Returns true or false value indicating whether or not a node is a
-// descendant of the calling node.
-func contains(parent, childNode Node) bool {
-	trc := childNode
-	for {
-		if trc == parent {
-			return true
-		}
-		trc = trc.GetParentNode()
-	}
-	return false
-}
-
 // Returns the object's root
 func getRootNode(node Node) Node {
 	trc := node

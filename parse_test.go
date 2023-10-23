@@ -169,3 +169,18 @@ xmlns:f="https://test.com/furniture">
 		t.Errorf("Bad name: %v", name)
 	}
 }
+
+func TestAutoClose(t *testing.T) {
+	input := `<note>
+<to>Tove<br></to>
+<from>Jani</from>
+</note>`
+	dec := xml.NewDecoder(strings.NewReader(input))
+	dec.AutoClose = xml.HTMLAutoClose
+	dec.Strict = false
+	_, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+}

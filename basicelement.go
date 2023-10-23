@@ -13,6 +13,29 @@ var _ Element = &BasicElement{}
 // the same (that is, they reference the same object).
 func (el *BasicElement) IsSameNode(node Node) bool { return node == el }
 
+func (el *BasicElement) IsEqualNode(node Node) bool {
+	el2, ok := node.(*BasicElement)
+	if !ok {
+		return false
+	}
+	if el.name != el2.name {
+		return false
+	}
+	if len(el.attributes.attrs) != len(el2.attributes.attrs) {
+		return false
+	}
+	for _, attr := range el.attributes.attrs {
+		attr2, ok := el2.attributes.mapAttrs[attr.name.Name]
+		if !ok {
+			return false
+		}
+		if !attr.IsEqualNode(attr2) {
+			return false
+		}
+	}
+	return isEqualNode(el, el2)
+}
+
 // Returns HTML uppercased qualified name
 func (el *BasicElement) GetNodeName() string { return el.getQName() }
 
@@ -211,7 +234,7 @@ func (el *BasicElement) GetAttributeNS(uri string, name string) (string, bool) {
 // Returns a boolean value indicating if the element has the
 // specified attribute or not.
 func (el *BasicElement) HasAttribute(name string) bool {
-	return el.HasAttribute(name)
+	return el.GetAttributeNode(name) != nil
 }
 
 // Returns a boolean value indicating if the element has the
@@ -249,6 +272,11 @@ func (el *BasicElement) RemoveAttributeNS(uri string, name string) {
 
 // Sets the value of a named attribute of the current node.
 func (el *BasicElement) SetAttribute(name string, value string) {
+	existing := el.attributes.GetNamedItem(name)
+	if existing != nil {
+		existing.SetValue(value)
+		return
+	}
 	attr := el.ownerDocument.CreateAttribute(name)
 	attr.SetValue(value)
 	el.attributes.setNamedItem(el, attr)
@@ -257,6 +285,11 @@ func (el *BasicElement) SetAttribute(name string, value string) {
 // Sets the value of the attribute with the specified name and
 // namespace, from the current node.
 func (el *BasicElement) SetAttributeNS(uri string, name string, value string) {
+	existing := el.attributes.GetNamedItemNS(uri, name)
+	if existing != nil {
+		existing.SetValue(value)
+		return
+	}
 	attr := el.ownerDocument.CreateAttributeNS(uri, name)
 	attr.SetValue(value)
 	el.attributes.setNamedItemNS(el, attr)

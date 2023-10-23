@@ -99,7 +99,7 @@ func (m *basicNamedNodeMap) setNamedItemNS(owner Node, attr Attr) {
 		if existing == attr {
 			return
 		}
-		delete(m.mapAttrs, qname)
+		m.mapAttrs[qname] = ba
 		for k := range m.attrs {
 			if m.attrs[k] == existing {
 				m.attrs[k] = ba

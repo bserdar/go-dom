@@ -159,3 +159,59 @@ func TestAttrNS2(t *testing.T) {
 		t.Errorf("Wrong value")
 	}
 }
+
+func TestEqual(t *testing.T) {
+	input := `<root><el a1="val" />   <!--c--> </root>`
+
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	dec = xml.NewDecoder(strings.NewReader(input))
+	doc2, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+	if !doc.IsEqualNode(doc2) {
+		t.Errorf("Not equal")
+	}
+}
+
+func TestAttrMod(t *testing.T) {
+	input := `<root><el a1="val"/></root>`
+	dec := xml.NewDecoder(strings.NewReader(input))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+		return
+	}
+
+	el := doc.GetDocumentElement().GetFirstChild().(Element)
+	if s, ok := el.GetAttribute("a1"); s != "val" || !ok {
+		t.Errorf("a1 not here")
+	}
+
+	el.SetAttribute("a1", "updated")
+	if s, ok := el.GetAttribute("a1"); s != "updated" || !ok {
+		t.Errorf("a1 wrong")
+	}
+
+	el.SetAttribute("a2", "new")
+	if s, ok := el.GetAttribute("a1"); s != "updated" || !ok {
+		t.Errorf("a1 wrong")
+	}
+	if s, ok := el.GetAttribute("a2"); s != "new" || !ok {
+		t.Errorf("a2 wrong")
+	}
+
+	el.RemoveAttribute("a1")
+	if s, ok := el.GetAttribute("a1"); s != "" || ok {
+		t.Errorf("a1 still here")
+	}
+	if s, ok := el.GetAttribute("a2"); s != "new" || !ok {
+		t.Errorf("a2 wrong")
+	}
+}
