@@ -166,14 +166,13 @@ func (node *basicNode) LookupNamespaceURI(prefix string) string {
 // Returns true or false value indicating whether or not a node is a
 // descendant of the calling node.
 func (node *basicNode) Contains(nd Node) bool {
-	if nd == node {
-		return true
-	}
-	for ch := node.GetFirstChild(); ch != nil; ch = ch.GetNextSibling() {
-		if ch.Contains(nd) {
+	tn := node.treeNode()
+	for par := nd; par != nil; par = par.GetParentNode() {
+		if par.treeNode() == tn {
 			return true
 		}
 	}
+
 	return false
 }
 

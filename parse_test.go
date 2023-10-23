@@ -168,6 +168,14 @@ xmlns:f="https://test.com/furniture">
 	if name.Local != "name" || name.Space != fSpace || name.Prefix != "f" {
 		t.Errorf("Bad name: %v", name)
 	}
+
+	if el.GetRootNode() != doc {
+		t.Errorf("root")
+	}
+
+	if !doc.Contains(el) {
+		t.Errorf("Contains")
+	}
 }
 
 func TestAutoClose(t *testing.T) {
