@@ -301,13 +301,13 @@ func TestNamedNodeMap(t *testing.T) {
 		t.Errorf("Index access")
 	}
 
-	if attr := nnm.GetNamedItem("a1"); attr.GetValue() != "val" {
+	if attr := nnm.GetNamedItemNS("", "a1"); attr.GetValue() != "val" {
 		t.Errorf("a1 not here")
 	}
 
 	attr2 := doc.CreateAttribute("a2")
 	attr2.SetValue("new")
-	nnm.SetNamedItem(attr2)
+	nnm.SetNamedItemNS(attr2)
 	if s, ok := el.GetAttribute("a1"); s != "val" || !ok {
 		t.Errorf("a1 wrong")
 	}
@@ -315,7 +315,7 @@ func TestNamedNodeMap(t *testing.T) {
 		t.Errorf("a2 wrong")
 	}
 
-	nnm.RemoveNamedItem("a1")
+	nnm.RemoveNamedItemNS("", "a1")
 	if s, ok := el.GetAttribute("a1"); s != "" || ok {
 		t.Errorf("a1 still here")
 	}

@@ -1,6 +1,7 @@
 package dom
 
 import (
+	"bytes"
 	"encoding/xml"
 	"strings"
 	"testing"
@@ -131,4 +132,48 @@ func TestDTD(t *testing.T) {
 		return
 	}
 	_ = doc
+}
+
+func TestNormalizeNamespaces(t *testing.T) {
+	doit := func(input string) (string, error) {
+		dec := xml.NewDecoder(strings.NewReader(input))
+		doc, err := Parse(dec)
+		if err != nil {
+			return "", err
+		}
+		if err := doc.NormalizeNamespaces(); err != nil {
+			return "", err
+		}
+		buf := bytes.Buffer{}
+		if err := Encode(doc, &buf); err != nil {
+			return "", err
+		}
+		return buf.String(), nil
+	}
+
+	input := `<?xml version="1.0" ?><h:note xmlns:h="http://www.w3.org/TR/html4/" xmlns:t="https://test.com/t">
+<t:to>Tove</t:to>
+<!--comment-->
+<t:from>Jani &amp;</t:from>
+<h:body>weekend!</h:body>
+</h:note>`
+	str, err := doit(input)
+	if err != nil {
+		t.Error(err)
+	}
+	if str != input {
+		t.Errorf("Expected '%s', got '%s'", input, str)
+	}
+
+	input = `<h:note xmlns:t="https://test.com/t">
+<t:to>Tove</t:to>
+<!--comment-->
+<t:from>Jani &amp;</t:from>
+<h:body>weekend!</h:body>
+</h:note>`
+	str, err = doit(input)
+	if err == nil {
+		t.Error("Error expected")
+	}
+	t.Log(err)
 }

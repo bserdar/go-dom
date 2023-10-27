@@ -24,38 +24,6 @@ func (cs *basicChardata) RemoveChild(Node) {
 
 func (cs *basicChardata) Normalize() {}
 
-type BasicCDataSection struct {
-	basicChardata
-}
-
-var _ CDATASection = &BasicCDataSection{}
-
-// Returns a boolean value indicating whether or not the two nodes are
-// the same (that is, they reference the same object).
-func (cd *BasicCDataSection) IsSameNode(node Node) bool { return node == cd }
-
-// Returns "#cdata-section"
-func (cd *BasicCDataSection) GetNodeName() string { return "#cdata-section" }
-
-// Returns CDATA_SECTION_NODE
-func (cd *BasicCDataSection) GetNodeType() NodeType { return CDATA_SECTION_NODE }
-
-func (cd *BasicCDataSection) IsEqualNode(node Node) bool {
-	n, ok := node.(*BasicCDataSection)
-	if !ok {
-		return false
-	}
-	return n.text == cd.text
-}
-
-func (cd *BasicCDataSection) CloneNode(deep bool) Node {
-	return cd.cloneNode(cd.ownerDocument, deep)
-}
-
-func (cd *BasicCDataSection) cloneNode(owner Document, deep bool) Node {
-	return owner.CreateCDATASection(cd.text)
-}
-
 type BasicText struct {
 	basicChardata
 }

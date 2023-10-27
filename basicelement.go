@@ -210,13 +210,13 @@ func (el *BasicElement) GetAttributeNames() []string {
 // Retrieves the node representation of the named attribute from the
 // current node and returns it as an Attr.
 func (el *BasicElement) GetAttributeNode(name string) Attr {
-	return el.attributes.GetNamedItem(name)
+	return el.attributes.GetNamedItemNS("", name)
 }
 
 // Retrieves the node representation of the attribute with the
 // specified name and namespace, from the current node and returns
 // it as an Attr.
-func (el *BasicElement) GetAttributeNodeNS(uri string, name string) Attr {
+func (el *BasicElement) GetAttributeNodeNS(uri, name string) Attr {
 	return el.attributes.GetNamedItemNS(uri, name)
 }
 
@@ -245,7 +245,7 @@ func (el *BasicElement) HasAttributeNS(uri string, name string) bool {
 
 // Removes the named attribute from the current node.
 func (el *BasicElement) RemoveAttribute(name string) {
-	el.attributes.RemoveNamedItem(name)
+	el.attributes.RemoveNamedItemNS("", name)
 }
 
 // Removes the node representation of the named attribute from the
@@ -262,35 +262,27 @@ func (el *BasicElement) RemoveAttributeNS(uri string, name string) {
 	el.attributes.RemoveNamedItemNS(uri, name)
 }
 
-// // 	// Replaces the existing children of a Node with a specified new set
-// // 	// of children.
-// // 	ReplaceChildren(...Node)
-
-// // 	// Replaces the element in the children list of its parent with a
-// // 	// set of Node or DOMString objects.
-// // 	ReplaceWith(...Node)
-
 // Sets the value of a named attribute of the current node.
 func (el *BasicElement) SetAttribute(name string, value string) {
-	existing := el.attributes.GetNamedItem(name)
+	existing := el.attributes.GetNamedItemNS("", name)
 	if existing != nil {
 		existing.SetValue(value)
 		return
 	}
 	attr := el.ownerDocument.CreateAttribute(name)
 	attr.SetValue(value)
-	el.attributes.setNamedItem(el, attr)
+	el.attributes.setNamedItemNS(el, attr)
 }
 
 // Sets the value of the attribute with the specified name and
 // namespace, from the current node.
-func (el *BasicElement) SetAttributeNS(uri string, name string, value string) {
+func (el *BasicElement) SetAttributeNS(prefix, uri, name string, value string) {
 	existing := el.attributes.GetNamedItemNS(uri, name)
 	if existing != nil {
 		existing.SetValue(value)
 		return
 	}
-	attr := el.ownerDocument.CreateAttributeNS(uri, name)
+	attr := el.ownerDocument.CreateAttributeNS(prefix, uri, name)
 	attr.SetValue(value)
 	el.attributes.setNamedItemNS(el, attr)
 }
@@ -298,7 +290,7 @@ func (el *BasicElement) SetAttributeNS(uri string, name string, value string) {
 // Sets the node representation of the named attribute from the
 // current node.
 func (el *BasicElement) SetAttributeNode(attr Attr) {
-	el.attributes.setNamedItem(el, attr)
+	el.attributes.setNamedItemNS(el, attr)
 }
 
 // Sets the node representation of the attribute with the specified
@@ -371,7 +363,7 @@ func (el *BasicElement) cloneNode(owner Document, deep bool) Node {
 	newElement.name = el.name
 	for _, attr := range el.attributes.attrs {
 		newAttr := attr.cloneNode(owner, deep).(*BasicAttr)
-		newElement.attributes.setNamedItem(newElement, newAttr)
+		newElement.attributes.setNamedItemNS(newElement, newAttr)
 	}
 	if deep {
 		for child := el.GetFirstChild(); child != nil; child = child.GetNextSibling() {
@@ -380,4 +372,18 @@ func (el *BasicElement) cloneNode(owner Document, deep bool) Node {
 		}
 	}
 	return newElement
+}
+
+func (el *BasicElement) getNamespaceInfo() (defaultNS string, definedPrefixes map[string]string) {
+	for _, attr := range el.attributes.attrs {
+		if len(attr.name.Space) == 0 && attr.name.Local == xmlnsPrefix {
+			defaultNS = attr.value
+		} else if attr.name.Space == xmlnsURL {
+			if definedPrefixes == nil {
+				definedPrefixes = make(map[string]string)
+			}
+			definedPrefixes[attr.name.Local] = attr.value
+		}
+	}
+	return
 }

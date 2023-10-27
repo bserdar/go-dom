@@ -63,11 +63,11 @@ characters
 		t.Errorf("Bad root name")
 	}
 	el := root.GetFirstChild().GetNextSibling()
-	if el.GetNodeType() != CDATA_SECTION_NODE {
+	if el.GetNodeType() != TEXT_NODE {
 		t.Errorf("Not cdata: %s", el.GetNodeName())
 	}
-	if el.(CDATASection).GetValue() != "\ncharacters\n" {
-		t.Errorf("Bad text: %s", el.(CDATASection).GetValue())
+	if el.(Text).GetValue() != "\ncharacters\n" {
+		t.Errorf("Bad text: %T %v", el, el)
 	}
 	el = el.GetNextSibling().GetNextSibling()
 	if el.GetNodeName() != "to" && el.GetFirstChild().(Text).GetValue() != "Tove" {

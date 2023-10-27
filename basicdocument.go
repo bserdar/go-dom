@@ -2,6 +2,7 @@ package dom
 
 import (
 	"encoding/xml"
+	"fmt"
 )
 
 // BasicDocument implements DOM document
@@ -44,7 +45,7 @@ func (doc *BasicDocument) CreateAttribute(name string) Attr {
 }
 
 // Creates a new attribute node in a given namespace and returns it.
-func (doc *BasicDocument) CreateAttributeNS(ns string, name string) Attr {
+func (doc *BasicDocument) CreateAttributeNS(prefix string, ns string, name string) Attr {
 	return &BasicAttr{
 		basicNode: basicNode{
 			ownerDocument: doc,
@@ -54,6 +55,7 @@ func (doc *BasicDocument) CreateAttributeNS(ns string, name string) Attr {
 				Local: name,
 				Space: ns,
 			},
+			Prefix: prefix,
 		},
 	}
 }
@@ -74,7 +76,7 @@ func (doc *BasicDocument) CreateElement(tag string) Element {
 }
 
 // Creates a new element with the given tag name and namespace URI.
-func (doc *BasicDocument) CreateElementNS(ns string, tag string) Element {
+func (doc *BasicDocument) CreateElementNS(prefix string, ns string, tag string) Element {
 	el := &BasicElement{
 		basicNode: basicNode{
 			ownerDocument: doc,
@@ -84,21 +86,10 @@ func (doc *BasicDocument) CreateElementNS(ns string, tag string) Element {
 				Local: tag,
 				Space: ns,
 			},
+			Prefix: prefix,
 		},
 	}
 	return el
-}
-
-// Creates a new CDATA node and returns it.
-func (doc *BasicDocument) CreateCDATASection(text string) CDATASection {
-	return &BasicCDataSection{
-		basicChardata: basicChardata{
-			basicNode: basicNode{
-				ownerDocument: doc,
-			},
-			text: text,
-		},
-	}
 }
 
 // Creates a text node.
@@ -283,4 +274,88 @@ func (doc *BasicDocument) AdoptNode(node Node) Node {
 	}
 	setOwner(node)
 	return node
+}
+
+// NormalizeNamespaces assigns missing namespace prefixes
+func (doc *BasicDocument) NormalizeNamespaces() error {
+
+	type dictionary struct {
+		parent        *dictionary
+		definedPrefix map[string]string
+		defaultNS     string
+	}
+
+	root := doc.GetDocumentElement()
+	var normalize func(Element, *dictionary) error
+
+	var lookupNSByPrefix func(*dictionary, string) (string, bool)
+	lookupNSByPrefix = func(dict *dictionary, prefix string) (string, bool) {
+		if dict == nil {
+			return "", false
+		}
+		ns, ok := dict.definedPrefix[prefix]
+		if ok {
+			return ns, true
+		}
+		return lookupNSByPrefix(dict.parent, prefix)
+	}
+
+	uniqueNSIndex := 0
+	uniquePrefix := func(dict *dictionary, el *BasicElement, space string) string {
+		for i := uniqueNSIndex; ; i++ {
+			prefix := fmt.Sprintf("ns%d", i)
+			if _, exists := lookupNSByPrefix(dict, prefix); !exists {
+				uniqueNSIndex = i + 1
+				return prefix
+			}
+		}
+	}
+
+	normalize = func(el Element, dict *dictionary) error {
+		newDict := &dictionary{parent: dict}
+		bel := el.(*BasicElement)
+		newDict.defaultNS, newDict.definedPrefix = bel.getNamespaceInfo()
+		// Make sure all namespaces are valid here
+		if len(bel.name.Space) > 0 {
+			if len(bel.name.Prefix) > 0 {
+				// There is a namespace, and prefix
+				// Is there such a prefix, and does the NS match
+				ns, exists := lookupNSByPrefix(newDict, bel.name.Prefix)
+				if exists {
+					if ns != bel.name.Space {
+						return ErrDOM{
+							Typ: NAMESPACE_ERR,
+							Msg: fmt.Sprintf("Inconsistent prefix %s", bel.name.Prefix),
+						}
+					}
+				} else {
+					// Define a namespace with this prefix
+					bel.SetAttributeNS(xmlnsPrefix, xmlnsURL, bel.name.Prefix, bel.name.Space)
+					// Add to dict
+					newDict.definedPrefix[bel.name.Prefix] = bel.name.Space
+				}
+			} else {
+				// There is namespace but no prefix
+				bel.name.Prefix = uniquePrefix(newDict, bel, bel.name.Space)
+			}
+		} else if len(bel.name.Prefix) > 0 {
+			// There is prefix with no namespace
+			ns, exists := lookupNSByPrefix(newDict, bel.name.Prefix)
+			if !exists {
+				return ErrDOM{
+					Typ: NAMESPACE_ERR,
+					Msg: fmt.Sprintf("No namespace for prefix %s", bel.name.Prefix),
+				}
+			}
+			bel.name.Space = ns
+		}
+
+		for child := el.GetFirstElementChild(); child != nil; child = child.GetNextElementSibling() {
+			normalize(child, newDict)
+		}
+
+		return nil
+	}
+
+	return normalize(root, nil)
 }

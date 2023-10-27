@@ -10,10 +10,7 @@ type Document interface {
 	CreateAttribute(string) Attr
 
 	// Creates a new attribute node in a given namespace and returns it.
-	CreateAttributeNS(ns string, name string) Attr
-
-	// Creates a new CDATA node and returns it.
-	CreateCDATASection(string) CDATASection
+	CreateAttributeNS(prefix string, ns string, name string) Attr
 
 	// Creates a new comment node and returns it.
 	CreateComment(string) Comment
@@ -22,7 +19,7 @@ type Document interface {
 	CreateElement(string) Element
 
 	// Creates a new element with the given tag name and namespace URI.
-	CreateElementNS(ns string, tag string) Element
+	CreateElementNS(prefix string, ns string, tag string) Element
 
 	// Creates a text node.
 	CreateTextNode(string) Text
@@ -30,8 +27,8 @@ type Document interface {
 	//Creates a new ProcessingInstruction object.
 	CreateProcessingInstruction(target, data string) ProcessingInstruction
 
-	// // Replaces entities, normalizes text nodes, etc.
-	// NormalizeDocument()
+	// Assigns missing namespace prefixes, resolve prefix clashes etc.
+	NormalizeNamespaces() error
 
 	//	Adopt node from an external document.
 	AdoptNode(Node) Node

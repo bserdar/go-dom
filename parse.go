@@ -8,13 +8,6 @@ import (
 	"unicode"
 )
 
-const (
-	xmlURL      = "http://www.w3.org/XML/1998/namespace"
-	xmlnsURL    = "http://www.w3.org/2000/xmlns"
-	xmlnsPrefix = "xmlns"
-	xmlPrefix   = "xml"
-)
-
 // Parses an XML document.
 //
 // If decoder.Strict is false, the parser looks at decoder.AutoClose
@@ -223,10 +216,10 @@ func Parse(decoder *xml.Decoder) (ret Document, resultErr error) {
 						Msg: "CDATA before document",
 					}
 				}
-				newNode := ret.CreateCDATASection(string(content[6 : len(content)-2]))
+				newNode := ret.CreateTextNode(string(content[6 : len(content)-2]))
 				parent.AppendChild(newNode)
 			} else {
-				documentType, ok, err := parseDocumentType([]byte(token))
+				documentType, ok, err := ParseDocumentType([]byte(token))
 				if err != nil {
 					return nil, err
 				}

@@ -41,7 +41,7 @@ type Element interface {
 	// Retrieves the node representation of the attribute with the
 	// specified name and namespace, from the current node and returns
 	// it as an Attr.
-	GetAttributeNodeNS(uri string, name string) Attr
+	GetAttributeNodeNS(uri, name string) Attr
 
 	//	Retrieves the value of the attribute with the specified
 	//	namespace and name from the current node and returns it as a
@@ -51,10 +51,6 @@ type Element interface {
 	// Returns a boolean value indicating if the element has the
 	// specified attribute or not.
 	HasAttribute(string) bool
-
-	// Returns a boolean value indicating if the element has the
-	// specified attribute, in the specified namespace, or not.
-	HasAttributeNS(uri string, name string) bool
 
 	// Removes the element from the children list of its parent.
 	Remove()
@@ -70,14 +66,6 @@ type Element interface {
 	// the current node.
 	RemoveAttributeNS(uri string, name string)
 
-	// Replaces the existing children of a Node with a specified new set
-	// of children.
-	//	ReplaceChildren(...Node)
-
-	// Replaces the element in the children list of its parent with a
-	// set of Node or DOMString objects.
-	//	ReplaceWith(...Node)
-
 	// Sets the value of a named attribute of the current node.
 	SetAttribute(name string, value string)
 
@@ -85,32 +73,19 @@ type Element interface {
 	// current node.
 	SetAttributeNode(attr Attr)
 
-	// Sets the node representation of the attribute with the specified
-	// name and namespace, from the current node.
-	SetAttributeNodeNS(attr Attr)
-
 	// Sets the value of the attribute with the specified name and
 	// namespace, from the current node.
-	SetAttributeNS(uri string, name string, value string)
+	SetAttributeNS(prefix, uri, name string, value string)
 }
 
 type NamedNodeMap interface {
 	GetLength() int
 
-	// Returns a Attr, corresponding to the given name.
-	GetNamedItem(string) Attr
-
-	// Replaces, or adds, the Attr identified in the map by the given name.
-	SetNamedItem(Attr)
-
-	// Removes the Attr identified by the given name
-	RemoveNamedItem(string)
-
 	// Returns the Attr at the given index, or null if the index is higher or equal to the number of nodes
 	Item(int) Attr
 
 	// Returns a Attr identified by a namespace and related local name.
-	GetNamedItemNS(uri string, name string) Attr
+	GetNamedItemNS(uri, name string) Attr
 
 	// Replaces, or adds, the Attr identified in the map by the given namespace and related local name.
 	SetNamedItemNS(Attr)

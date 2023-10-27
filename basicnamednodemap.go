@@ -13,18 +13,6 @@ func (m *basicNamedNodeMap) GetLength() int {
 	return len(m.attrs)
 }
 
-// Returns a Attr, corresponding to the given name.
-func (m *basicNamedNodeMap) GetNamedItem(name string) Attr {
-	if m.mapAttrs == nil {
-		return nil
-	}
-	item, ok := m.mapAttrs[xml.Name{Local: name}]
-	if !ok {
-		return nil
-	}
-	return item
-}
-
 // Returns a Attr identified by a namespace and related local name.
 func (m *basicNamedNodeMap) GetNamedItemNS(uri string, name string) Attr {
 	if m.mapAttrs == nil {
@@ -43,11 +31,6 @@ func (m *basicNamedNodeMap) Item(index int) Attr {
 		return nil
 	}
 	return m.attrs[index]
-}
-
-// Removes the Attr identified by the given name
-func (m *basicNamedNodeMap) RemoveNamedItem(name string) {
-	m.RemoveNamedItemNS("", name)
 }
 
 // RemoveNamedItemNS removes the Attr identified by the given name
@@ -73,11 +56,6 @@ func (m *basicNamedNodeMap) removeAttr(attr Attr) {
 		}
 	}
 	m.attrs = m.attrs[:w]
-}
-
-// Replaces, or adds, the Attr identified in the map by the given name.
-func (m *basicNamedNodeMap) setNamedItem(owner Node, a Attr) {
-	m.setNamedItemNS(owner, a)
 }
 
 // Replaces, or adds, the Attr identified in the map by the given namespace and related local name.
@@ -120,21 +98,6 @@ type BasicNamedNodeMap struct {
 var _ NamedNodeMap = &BasicNamedNodeMap{}
 
 func (b *BasicNamedNodeMap) GetLength() int { return b.owner.attributes.GetLength() }
-
-// Returns a Attr, corresponding to the given name.
-func (b *BasicNamedNodeMap) GetNamedItem(name string) Attr {
-	return b.owner.attributes.GetNamedItem(name)
-}
-
-// Replaces, or adds, the Attr identified in the map by the given name.
-func (b *BasicNamedNodeMap) SetNamedItem(a Attr) {
-	b.owner.attributes.setNamedItem(b.owner, a)
-}
-
-// Removes the Attr identified by the given name
-func (b *BasicNamedNodeMap) RemoveNamedItem(name string) {
-	b.owner.attributes.RemoveNamedItem(name)
-}
 
 // Returns the Attr at the given index, or null if the index is higher or equal to the number of nodes
 func (b *BasicNamedNodeMap) Item(i int) Attr {

@@ -1,5 +1,12 @@
 package dom
 
+const (
+	xmlURL      = "http://www.w3.org/XML/1998/namespace"
+	xmlnsURL    = "http://www.w3.org/2000/xmlns"
+	xmlnsPrefix = "xmlns"
+	xmlPrefix   = "xml"
+)
+
 type NodeType uint
 
 const ELEMENT_NODE NodeType = 1
