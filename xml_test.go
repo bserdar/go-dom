@@ -134,7 +134,7 @@ func TestDTD(t *testing.T) {
 	_ = doc
 }
 
-func TestNormalizeNamespaces(t *testing.T) {
+func TestNormalizeNamespacesOK(t *testing.T) {
 	doit := func(input string) (string, error) {
 		dec := xml.NewDecoder(strings.NewReader(input))
 		doc, err := Parse(dec)
@@ -176,4 +176,29 @@ func TestNormalizeNamespaces(t *testing.T) {
 		t.Error("Error expected")
 	}
 	t.Log(err)
+}
+
+func TestNormalizeNamespaces(t *testing.T) {
+	dec := xml.NewDecoder(strings.NewReader(`<h:note xmlns:h="https://test.com/h">
+<h:to>Tove</h:to>
+</h:note>`))
+	doc, err := Parse(dec)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	doc.GetDocumentElement().AppendChild(doc.CreateElementNS("", "https://test.com/t", "new"))
+	if err := doc.NormalizeNamespaces(); err != nil {
+		t.Errorf(err.Error())
+	}
+	buf := bytes.Buffer{}
+	if err := Encode(doc, &buf); err != nil {
+		t.Errorf(err.Error())
+	}
+	t.Log(buf.String())
+	if buf.String() != `<h:note xmlns:h="https://test.com/h">
+<h:to>Tove</h:to>
+<ns0:new xmlns:ns0="https://test.com/t"></ns0:new></h:note>` {
+		t.Errorf("Got %s", buf.String())
+	}
+
 }

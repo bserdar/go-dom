@@ -337,6 +337,7 @@ func (doc *BasicDocument) NormalizeNamespaces() error {
 			} else {
 				// There is namespace but no prefix
 				bel.name.Prefix = uniquePrefix(newDict, bel, bel.name.Space)
+				bel.SetAttributeNS(xmlnsPrefix, xmlnsURL, bel.name.Prefix, bel.name.Space)
 			}
 		} else if len(bel.name.Prefix) > 0 {
 			// There is prefix with no namespace
