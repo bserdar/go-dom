@@ -15,6 +15,7 @@ type BasicDocumentType struct {
 	defn string
 }
 
+func (dt *BasicDocumentType) GetNodeType() NodeType { return DOCUMENT_TYPE_NODE }
 func (dt *BasicDocumentType) GetName() string       { return dt.name }
 func (dt *BasicDocumentType) GetPublicID() string   { return dt.publicID }
 func (dt *BasicDocumentType) GetSystemID() string   { return dt.systemID }

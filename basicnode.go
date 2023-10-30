@@ -29,25 +29,14 @@ func (node *basicNode) GetRootNode() Node {
 	return getRootNode(node)
 }
 
-func (node *basicNode) GetNodeName() string {
-	panic("basicNode.GetNodeName should not have been called")
-}
+func (node *basicNode) GetNodeType() NodeType { return 255 }
+func (node *basicNode) GetNodeName() string   { return "" }
 
-func (node *basicNode) GetNodeType() NodeType {
-	panic("basicNode.GetNodeType should not have been called")
-}
+func (node *basicNode) IsEqualNode(Node) bool { return false }
 
-func (node *basicNode) IsEqualNode(Node) bool {
-	panic("basicNode.IsEqualNode should not have been called")
-}
+func (node *basicNode) CloneNode(bool) Node { return nil }
 
-func (node *basicNode) CloneNode(bool) Node {
-	panic("basicNode.CloneNode should not have been called")
-}
-
-func (node *basicNode) cloneNode(_ Document, _ bool) Node {
-	panic("basicNode.cloneNode should not have been called")
-}
+func (node *basicNode) cloneNode(_ Document, _ bool) Node { return nil }
 
 // Returns a boolean value indicating whether or not the element has
 // any child nodes.
@@ -133,23 +122,15 @@ func (node *basicNode) GetChildNodes() NodeList {
 	return newBasicNodeList(node)
 }
 
-func (node *basicNode) IsSameNode(Node) bool {
-	panic(ErrHierarchyRequest("IsSameNode", "Wrong node type"))
-}
+func (node *basicNode) IsSameNode(Node) bool { return false }
 
-func (node *basicNode) InsertBefore(newNode, referenceNode Node) Node {
-	panic(ErrHierarchyRequest("InsertBefore", "Wrong node type"))
-}
+func (node *basicNode) InsertBefore(newNode, referenceNode Node) Node { return nil }
 
 // Append newNode as a child of node
-func (node *basicNode) AppendChild(newNode Node) Node {
-	panic(ErrHierarchyRequest("AppendChild", "Wrong node type"))
-}
+func (node *basicNode) AppendChild(newNode Node) Node { return nil }
 
 // Remove child from node
-func (node *basicNode) RemoveChild(child Node) {
-	panic(ErrHierarchyRequest("RemoveChild", "Wrong node type"))
-}
+func (node *basicNode) RemoveChild(child Node) {}
 
 // Returns a string  containing the prefix for a given namespace
 // URI, if present, and "" if not. When multiple prefixes are
